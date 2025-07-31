@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import { 
   Users, 
   Shield, 
@@ -127,6 +127,8 @@ interface AdminSidebarProps {
 export function AdminSidebar({ collapsed = false, onToggleCollapse }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const params = useParams();
+  const locale = params.locale as string;
   const [expandedItems, setExpandedItems] = useState<string[]>(['users']);
 
   const toggleExpanded = (itemId: string) => {
@@ -138,7 +140,8 @@ export function AdminSidebar({ collapsed = false, onToggleCollapse }: AdminSideb
   };
 
   const isItemActive = (href: string) => {
-    return pathname === href || pathname.startsWith(href + '/');
+    const fullPath = `/${locale}${href}`;
+    return pathname === fullPath || pathname.startsWith(fullPath + '/');
   };
 
   const isItemExpanded = (itemId: string) => {
@@ -184,7 +187,7 @@ export function AdminSidebar({ collapsed = false, onToggleCollapse }: AdminSideb
                   if (item.subItems) {
                     toggleExpanded(item.id);
                   } else {
-                    router.push(item.href);
+                    router.push(`/${locale}${item.href}`);
                   }
                 }}
               >
@@ -214,7 +217,7 @@ export function AdminSidebar({ collapsed = false, onToggleCollapse }: AdminSideb
                             ? 'bg-blue-500 text-white'
                             : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                         }`}
-                        onClick={() => router.push(subItem.href)}
+                        onClick={() => router.push(`/${locale}${subItem.href}`)}
                       >
                         {subItem.icon}
                         <span className="text-sm">{subItem.label}</span>

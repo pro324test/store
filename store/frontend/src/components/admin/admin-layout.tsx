@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AdminSidebar } from './admin-sidebar';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '../ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Bell, User, LogOut } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -17,6 +17,8 @@ export function AdminLayout({ children, title, description }: AdminLayoutProps) 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const locale = params.locale as string;
 
   const handleToggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -66,7 +68,7 @@ export function AdminLayout({ children, title, description }: AdminLayoutProps) 
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => router.push('/admin')}
+                    onClick={() => router.push(`/${locale}/admin`)}
                   >
                     <User className="w-4 h-4" />
                   </Button>
