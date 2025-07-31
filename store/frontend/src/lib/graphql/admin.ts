@@ -356,3 +356,34 @@ export const UPDATE_USER_ROLE = gql`
     }
   }
 `;
+
+// Dashboard statistics
+export const GET_DASHBOARD_STATS = gql`
+  query GetDashboardStats {
+    dashboardStats {
+      totalUsers
+      totalProducts
+      totalOrders
+      totalVendors
+      activeUsersCount
+      pendingOrdersCount
+      userGrowth
+      productGrowth
+      orderGrowth
+      systemHealth {
+        status
+        message
+        details
+      }
+      recentActivity {
+        id
+        type
+        description
+        storeName
+        amount
+        createdAt
+        status
+      }
+    }
+  }
+`;
