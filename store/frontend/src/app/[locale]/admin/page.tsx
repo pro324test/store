@@ -4,17 +4,16 @@
 export const dynamic = 'force-dynamic';
 
 import { ProtectedRoute } from '@/components/auth/protected-route';
+import { AdminLayout } from '@/components/admin/admin-layout';
 import { useAuth } from '@/lib/auth-context';
-import { useTranslations } from 'next-intl';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Role } from '@/types/auth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Shield, Users, Package, TrendingUp, Settings } from 'lucide-react';
 
 function AdminDashboardContent() {
-  const { user, logout } = useAuth();
-  const tAuth = useTranslations('auth');
+  const { user } = useAuth();
   const router = useRouter();
 
   // Check if user has admin role
@@ -41,28 +40,11 @@ function AdminDashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-6xl mx-auto space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Shield className="w-8 h-8 text-primary" />
-              Admin Dashboard
-            </h1>
-            <p className="text-muted-foreground">
-              Welcome, {user?.fullName} - System Administrator
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
-              User Dashboard
-            </Button>
-            <Button variant="outline" onClick={logout}>
-              {tAuth('logout')}
-            </Button>
-          </div>
-        </div>
-
+    <AdminLayout 
+      title="Admin Dashboard" 
+      description="System overview and management tools"
+    >
+      <div className="space-y-6">
         {/* Admin Stats Overview */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -126,7 +108,7 @@ function AdminDashboardContent() {
           </Card>
         </div>
 
-        {/* Admin Actions */}
+        {/* Quick Actions */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader>
@@ -136,10 +118,18 @@ function AdminDashboardContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => router.push('/admin/users')}
+              >
                 View All Users
               </Button>
-              <Button className="w-full" variant="outline">
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => router.push('/admin/users/roles')}
+              >
                 Manage Roles
               </Button>
               <Button className="w-full" variant="outline">
@@ -170,46 +160,6 @@ function AdminDashboardContent() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Order Management</CardTitle>
-              <CardDescription>
-                Manage orders and transactions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline">
-                View All Orders
-              </Button>
-              <Button className="w-full" variant="outline">
-                Transaction Logs
-              </Button>
-              <Button className="w-full" variant="outline">
-                Sales Reports
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Vendor Management</CardTitle>
-              <CardDescription>
-                Manage vendors and suppliers
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline">
-                View All Vendors
-              </Button>
-              <Button className="w-full" variant="outline">
-                Vendor Applications
-              </Button>
-              <Button className="w-full" variant="outline">
-                Vendor Reports
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
               <CardTitle>System Settings</CardTitle>
               <CardDescription>
                 Configure system parameters
@@ -224,26 +174,6 @@ function AdminDashboardContent() {
               </Button>
               <Button className="w-full" variant="outline">
                 System Logs
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics & Reports</CardTitle>
-              <CardDescription>
-                View system analytics and reports
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button className="w-full" variant="outline">
-                Sales Analytics
-              </Button>
-              <Button className="w-full" variant="outline">
-                User Analytics
-              </Button>
-              <Button className="w-full" variant="outline">
-                Performance Reports
               </Button>
             </CardContent>
           </Card>
@@ -284,7 +214,7 @@ function AdminDashboardContent() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 
