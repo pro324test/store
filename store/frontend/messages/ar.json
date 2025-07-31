@@ -156,5 +156,66 @@
     "hero_description": "متجرك الشامل للمنتجات عالية الجودة بأسعار رائعة",
     "shop_now": "تسوق الآن",
     "browse_categories": "تصفح الفئات"
+  },
+  "admin": {
+    "user_management": {
+      "title": "إدارة المستخدمين",
+      "description": "إدارة مستخدمي النظام وصلاحياتهم",
+      "add_user": "إضافة مستخدم",
+      "create_new_user": "إنشاء مستخدم جديد",
+      "edit_user": "تعديل المستخدم",
+      "update_user_info": "تحديث معلومات المستخدم",
+      "add_new_user_system": "إضافة مستخدم جديد إلى النظام",
+      "search_placeholder": "البحث عن المستخدمين بالاسم أو الهاتف أو البريد الإلكتروني...",
+      "filters": "المرشحات",
+      "all_users": "جميع المستخدمين",
+      "manage_monitor_users": "إدارة ومراقبة جميع مستخدمي النظام",
+      "no_users_found": "لم يتم العثور على مستخدمين يطابقون معايير البحث.",
+      "loading_users": "جاري تحميل المستخدمين...",
+      "error_loading_users": "خطأ في تحميل المستخدمين",
+      "table_headers": {
+        "user": "المستخدم",
+        "contact": "جهة الاتصال",
+        "status": "الحالة",
+        "roles": "الأدوار",
+        "joined": "تاريخ الانضمام",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "full_name": "الاسم الكامل",
+        "full_name_placeholder": "أدخل الاسم الكامل",
+        "phone_number": "رقم الهاتف",
+        "phone_placeholder": "أدخل رقم الهاتف",
+        "email": "البريد الإلكتروني",
+        "email_placeholder": "أدخل عنوان البريد الإلكتروني",
+        "required_fields": "الرجاء ملء الحقول المطلوبة",
+        "create_user": "إنشاء مستخدم",
+        "update_user": "تحديث المستخدم"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "roles": {
+        "no_roles": "لا توجد أدوار",
+        "primary": "أساسي"
+      },
+      "actions": {
+        "activate_user": "تفعيل المستخدم",
+        "deactivate_user": "إلغاء تفعيل المستخدم",
+        "edit_user": "تعديل المستخدم",
+        "delete_user": "حذف المستخدم",
+        "confirm_delete": "هل أنت متأكد من أنك تريد حذف المستخدم \"{userName}\"؟"
+      },
+      "messages": {
+        "user_created": "تم إنشاء المستخدم بنجاح",
+        "user_updated": "تم تحديث المستخدم بنجاح",
+        "user_deleted": "تم حذف المستخدم بنجاح",
+        "failed_create": "فشل في إنشاء المستخدم",
+        "failed_update": "فشل في تحديث المستخدم",
+        "failed_delete": "فشل في حذف المستخدم",
+        "failed_toggle_status": "فشل في تغيير حالة المستخدم"
+      }
+    }
   }
 }

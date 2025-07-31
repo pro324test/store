@@ -8,6 +8,7 @@ import { AdminLayout } from '@/components/admin/admin-layout';
 import { UserManagement } from '@/components/admin/user-management';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Role } from '@/types/auth';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
@@ -15,6 +16,8 @@ import { Shield } from 'lucide-react';
 function UserManagementPageContent() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations('admin.user_management');
+  const tCommon = useTranslations('common');
 
   // Check if user has admin role
   const isAdmin = user?.roles.some(role => role.role === Role.SYSTEM_STAFF && role.isActive);
@@ -32,7 +35,7 @@ function UserManagementPageContent() {
             You don&apos;t have permission to access the admin dashboard.
           </p>
           <Button onClick={() => router.back()}>
-            Go Back
+            {tCommon('back')}
           </Button>
         </div>
       </div>
@@ -41,8 +44,8 @@ function UserManagementPageContent() {
 
   return (
     <AdminLayout 
-      title="User Management" 
-      description="Manage system users, roles and permissions"
+      title={t('title')} 
+      description={t('description')}
     >
       <UserManagement />
     </AdminLayout>

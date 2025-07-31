@@ -156,5 +156,66 @@
     "hero_description": "Your one-stop shop for quality products at great prices",
     "shop_now": "Shop Now",
     "browse_categories": "Browse Categories"
+  },
+  "admin": {
+    "user_management": {
+      "title": "User Management",
+      "description": "Manage system users and their access",
+      "add_user": "Add User",
+      "create_new_user": "Create New User",
+      "edit_user": "Edit User",
+      "update_user_info": "Update user information",
+      "add_new_user_system": "Add a new user to the system",
+      "search_placeholder": "Search users by name, phone, or email...",
+      "filters": "Filters",
+      "all_users": "All Users",
+      "manage_monitor_users": "Manage and monitor all system users",
+      "no_users_found": "No users found matching your search criteria.",
+      "loading_users": "Loading users...",
+      "error_loading_users": "Error loading users",
+      "table_headers": {
+        "user": "User",
+        "contact": "Contact",
+        "status": "Status",
+        "roles": "Roles",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "form": {
+        "full_name": "Full Name",
+        "full_name_placeholder": "Enter full name",
+        "phone_number": "Phone Number",
+        "phone_placeholder": "Enter phone number",
+        "email": "Email",
+        "email_placeholder": "Enter email address",
+        "required_fields": "Please fill in required fields",
+        "create_user": "Create User",
+        "update_user": "Update User"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "roles": {
+        "no_roles": "No roles",
+        "primary": "Primary"
+      },
+      "actions": {
+        "activate_user": "Activate user",
+        "deactivate_user": "Deactivate user",
+        "edit_user": "Edit user",
+        "delete_user": "Delete user",
+        "confirm_delete": "Are you sure you want to delete user \"{userName}\"?"
+      },
+      "messages": {
+        "user_created": "User created successfully",
+        "user_updated": "User updated successfully",
+        "user_deleted": "User deleted successfully",
+        "failed_create": "Failed to create user",
+        "failed_update": "Failed to update user",
+        "failed_delete": "Failed to delete user",
+        "failed_toggle_status": "Failed to toggle user status"
+      }
+    }
   }
 }
