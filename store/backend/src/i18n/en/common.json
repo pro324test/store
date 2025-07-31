@@ -1,0 +1,55 @@
+{
+  "welcome": "Welcome",
+  "hello": "Hello",
+  "goodbye": "Goodbye",
+  "api": {
+    "title": "Ajjmal - E-Commerce Platform",
+    "description": "Comprehensive e-commerce platform for Libya",
+    "version": "Version 2.0"
+  },
+  "user": {
+    "profile": "Profile",
+    "customers": "Customers",
+    "vendors": "Vendors",
+    "staff": "Staff",
+    "delivery": "Delivery Personnel",
+    "created": "User created successfully",
+    "updated": "User updated successfully",
+    "deleted": "User deleted successfully"
+  },
+  "product": {
+    "title": "Products",
+    "categories": "Categories",
+    "brands": "Brands",
+    "featured": "Featured Products",
+    "latest": "Latest Products",
+    "created": "Product created successfully",
+    "updated": "Product updated successfully",
+    "deleted": "Product deleted successfully"
+  },
+  "order": {
+    "title": "Orders",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled",
+      "refunded": "Refunded"
+    }
+  },
+  "error": {
+    "notFound": "Resource not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "internal": "Internal server error",
+    "validation": "Validation error",
+    "duplicate": "Data already exists"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "phone": "Please enter a valid phone number",
+    "password": "Password must be at least 8 characters"
+  }
+}

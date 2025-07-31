@@ -1,0 +1,1188 @@
+// --- PRISMA CONFIGURATION ---
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// -------------------------------------
+// --- ENUMS AND TYPE DEFINITIONS ---
+// -------------------------------------
+
+// User role enum - for use in junction table
+enum UserRole {
+  SYSTEM_STAFF    // موظف نظام
+  CUSTOMER        // مشتري عادي
+  VENDOR          // تاجر / بائع معتمد
+  DELIVERY_PERSON // مندوب توصيل
+}
+
+// New model for user roles junction table
+model UserRoleAssignment {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  role      UserRole
+  isActive  Boolean  @default(true) @map("is_active")
+  isPrimary Boolean  @default(false) @map("is_primary") // Flag for primary role (UI purposes)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, role])
+  @@index([userId, isActive])
+  @@index([userId, isPrimary])
+  @@map("user_role_assignments")
+}
+
+// User role request model for handling role application processes
+model UserRoleRequest {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @map("user_id")
+  requestedRole     UserRole
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  submissionData    Json      // Form data submitted with the request
+  adminNotes        String?   @db.Text
+  rejectionReason   String?   @db.Text @map("rejection_reason")
+  
+  submittedAt       DateTime  @default(now()) @map("submitted_at")
+  processedAt       DateTime? @map("processed_at")
+  processedById     Int?      @map("processed_by_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processedBy       User?     @relation("ProcessedRoleRequests", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([requestedRole])
+  @@index([status])
+  @@map("user_role_requests")
+}
+
+// Order related enums
+enum OrderStatus {
+  PENDING    // قيد الانتظار
+  PROCESSING // قيد المعالجة
+  SHIPPED    // تم الشحن
+  DELIVERED  // تم التوصيل
+  CANCELLED  // تم الإلغاء
+  REFUNDED   // تم رد المبلغ
+}
+
+enum DeliveryStatus {
+  ASSIGNED   // تم التعيين
+  PICKED_UP  // تم الاستلام
+  IN_TRANSIT // في الطريق
+  DELIVERED  // تم التوصيل
+  FAILED     // فشل التوصيل
+  RETURNED   // تم الإرجاع
+}
+
+enum PaymentStatus {
+  PAID      // مدفوع بالكامل
+  UNPAID    // غير مدفوع
+  PARTIAL   // مدفوع جزئياً
+  CANCELLED // ملغى
+}
+
+// Product attribute type
+enum AttributeType {
+  TEXT     // Regular text attribute
+  COLOR    // Color with hex code
+  SIZE     // Size
+  MATERIAL // Material type
+  NUMBER   // Numeric attribute
+  BOOLEAN  // Yes/no attribute
+}
+
+// -------------------------------------
+// --- GEOGRAPHICAL SYSTEM ---
+// -------------------------------------
+
+// المناطق (الغربية، الشرقية، الجنوبية، إلخ)
+model GeoZone {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique // الاسم العربي
+  nameEn        String // الاسم الإنجليزي
+  code          String?   @unique
+  description   String?   @db.Text // الوصف العربي
+  descriptionEn String?   @map("description_en") @db.Text // الوصف بالإنجليزية
+  isActive      Boolean   @default(true) @map("is_active")
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // العلاقات
+  cities                GeoCity[]
+  vendorProfiles        VendorProfile[]
+  deliveryPersonProfiles DeliveryPersonProfile[]
+
+  @@index([isActive])
+  @@map("geo_zones")
+}
+
+// المدن (طرابلس، بنغازي، مصراتة، إلخ)
+model GeoCity {
+  id            Int       @id @default(autoincrement())
+  zoneId        Int       @map("zone_id")
+  name          String // الاسم العربي
+  nameEn        String    @map("name_en") // الاسم الإنجليزي
+  code          String?
+  description   String?   @db.Text // الوصف العربي
+  descriptionEn String?   @map("description_en") @db.Text // الوصف بالإنجليزية
+  isActive      Boolean   @default(true) @map("is_active")
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // العلاقات
+  zone                  GeoZone     @relation(fields: [zoneId], references: [id], onDelete: Restrict)
+  regions               GeoRegion[]
+  vendorProfiles        VendorProfile[]
+  customerAddresses     CustomerAddress[]
+  deliveryPersonProfiles DeliveryPersonProfile[]
+
+  @@unique([zoneId, name], map: "geo_cities_zone_name_unique")
+  @@index([isActive])
+  @@map("geo_cities")
+}
+
+// الأحياء (حي الأندلس، حي الجامعة، إلخ)
+model GeoRegion {
+  id            Int       @id @default(autoincrement())
+  cityId        Int       @map("city_id")
+  name          String // الاسم العربي
+  nameEn        String    @map("name_en") // الاسم الإنجليزي
+  code          String?
+  description   String?   @db.Text // الوصف العربي
+  descriptionEn String?   @map("description_en") @db.Text // الوصف بالإنجليزية
+  isActive      Boolean   @default(true) @map("is_active")
+  sortOrder     Int       @default(0) @map("sort_order")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // العلاقات
+  city                  GeoCity     @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  vendorProfiles        VendorProfile[]
+  customerAddresses     CustomerAddress[]
+  deliveryPersonProfiles DeliveryPersonProfile[]
+
+  @@unique([cityId, name], map: "geo_regions_city_name_unique")
+  @@index([isActive])
+  @@map("geo_regions")
+}
+
+// -------------------------------------
+// --- USER MANAGEMENT ---
+// -------------------------------------
+
+// Central user model - now with multiple roles
+model User {
+  id           Int     @id @default(autoincrement())
+  email        String? @unique
+  phoneNumber  String  @unique @map("phone_number")
+  passwordHash String  @map("password_hash")
+  fullName     String  @map("full_name")
+
+  // Remove the single role field
+  // role UserRole @map("role")
+  
+  // Add the roles relation via junction table
+  roles        UserRoleAssignment[]
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Multi-profile support
+  staffProfile        SystemStaffProfile?     @relation("UserStaffProfile")
+  vendorProfile       VendorProfile?          @relation("UserVendorProfile")
+  customerProfile     CustomerProfile?        @relation("UserCustomerProfile")
+  deliveryProfile     DeliveryPersonProfile?  @relation("UserDeliveryProfile")
+
+  // Update role history to reference assignments instead
+  roleHistoryChanges    UserRoleHistoryItem[] @relation("UserRoleHistory")
+  roleChangesPerformed  UserRoleHistoryItem[] @relation("RoleChangesPerformed")
+  
+  // Role requests
+  roleRequests        UserRoleRequest[] 
+  processedRequests   UserRoleRequest[] @relation("ProcessedRoleRequests")
+
+  // باقي العلاقات
+  auditLogs                AuditLog[]           @relation("UserActions")
+  loginSessions            UserLoginSession[]
+  notifications            UserNotification[]
+  devices                  UserDevice[]         @relation("UserDevices")
+  uploads                  FileUpload[]         @relation("UserUploads")
+  @@index([phoneNumber])
+  @@index([isActive])
+  @@map("users")
+}
+
+// Updated role history model for multi-role tracking
+model UserRoleHistoryItem {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @map("user_id")
+  role              UserRole
+  action            String   // "ASSIGNED", "REVOKED", "PRIMARY_CHANGED"
+  changedAt         DateTime @default(now()) @map("changed_at")
+  changedById       Int      @map("changed_by_id")
+  reason            String?  @db.Text
+  profileId         Int?     @map("profile_id") // ID of the related profile
+
+  user      User @relation("UserRoleHistory", fields: [userId], references: [id], onDelete: Cascade)
+  changedBy User @relation("RoleChangesPerformed", fields: [changedById], references: [id], onDelete: Restrict)
+
+  @@index([userId, changedAt(sort: Desc)])
+  @@map("user_role_history_items")
+}
+
+// User login sessions for security
+model UserLoginSession {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @map("user_id")
+  token     String  @unique // JWT or session token
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent")
+
+  // New device tracking fields
+  deviceType  String? @default("BROWSER") @map("device_type") // نوع الجهاز: BROWSER, ANDROID, IOS
+  deviceName  String? @map("device_name") // اسم الجهاز
+  deviceModel String? @map("device_model") // موديل الجهاز
+  imei        String? @map("imei") // رقم IMEI للأجهزة المحمولة
+  expiresAt DateTime  @map("expires_at")
+  isValid   Boolean   @default(true)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])  
+  @@index([deviceType])
+  @@index([imei])
+  @@index([isValid])
+  @@map("user_login_sessions")
+}
+
+// User notifications
+model UserNotification {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  title     String
+  titleEn   String    @map("title_en") // عنوان الإشعار بالإنجليزية
+  message   String    @db.Text
+  messageEn String    @map("message_en") @db.Text // رسالة الإشعار بالإنجليزية  
+  isRead    Boolean   @default(false) @map("is_read")
+  type      String    @default("INFO") // INFO, WARNING, ERROR, SUCCESS  link      String?   @db.Text // Optional link to relevant page
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([type])
+  @@map("user_notifications")
+}
+
+// System staff profile
+model SystemStaffProfile {
+  userId     Int       @id @map("user_id")
+  roleId     Int       @map("role_id")
+  employeeId String?   @unique @map("employee_id")
+  joinedAt   DateTime  @default(now()) @map("joined_at")
+  leftAt     DateTime? @map("left_at")
+  isActive   Boolean   @default(true) @map("is_active")
+
+  user User            @relation("UserStaffProfile", fields: [userId], references: [id], onDelete: Cascade)
+  role SystemStaffRole @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@index([isActive])
+  @@map("system_staff_profiles")
+}
+
+// Role-based permission management
+model SystemStaffRole {
+  id            Int       @id @default(autoincrement())
+  roleName      String    @unique @map("role_name") // اسم الدور بالعربية
+  roleNameEn    String    @map("role_name_en") // اسم الدور بالإنجليزية
+  description   String?   @db.Text // الوصف بالعربية
+  descriptionEn String?   @map("description_en") @db.Text // الوصف بالإنجليزية  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  permissions   SystemStaffRolePermission[]
+  staffProfiles SystemStaffProfile[]
+
+  @@map("system_staff_roles")
+}
+
+model Permission {
+  id            Int       @id @default(autoincrement())
+  permissionKey String    @unique @map("permission_key")
+  category      String // Grouping for UI
+  categoryEn    String    @map("category_en") // English category name
+  description   String?   @db.Text // الوصف بالعربية
+  descriptionEn String?   @map("description_en") @db.Text // الوصف بالإنجليزية  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  rolePermissions SystemStaffRolePermission[]
+
+  @@index([category])
+  @@map("permissions")
+}
+
+model SystemStaffRolePermission {
+  roleId       Int       @map("role_id")
+  permissionId Int       @map("permission_id")
+
+  role       SystemStaffRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission      @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("system_staff_role_permissions")
+}
+
+// نموذج جديد لتتبع أجهزة المستخدمين
+model UserDevice {
+  id     Int    @id @default(autoincrement())
+  userId Int    @map("user_id")
+
+  deviceType  String  @map("device_type") // نوع الجهاز: BROWSER, ANDROID, IOS
+  deviceName  String? @map("device_name") // اسم الجهاز
+  deviceModel String? @map("device_model") // موديل الجهاز
+  imei        String? @map("imei") // رقم IMEI للأجهزة المحمولة
+  fcmToken    String? @map("fcm_token") // توكن للإشعارات
+  isActive    Boolean   @default(true) @map("is_active")
+  lastUsedAt  DateTime  @default(now()) @map("last_used_at")
+  firstSeenAt DateTime  @default(now()) @map("first_seen_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  user User @relation("UserDevices", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, imei], name: "user_device_unique_imei", map: "user_device_unique_imei")
+  @@index([userId])
+  @@index([deviceType])
+  @@index([imei])
+  @@index([isActive])
+  @@map("user_devices")
+}
+
+// -------------------------------------
+// --- E-COMMERCE CUSTOMER MANAGEMENT ---
+// -------------------------------------
+
+// Customer profile (uses userId as primary key like other profiles)
+model CustomerProfile {
+  userId          Int       @id @map("user_id")
+  defaultAddressId Int?     @unique @map("default_address_id")
+  
+  // Customer preferences
+  language        String    @default("ar") // ar, en
+    // Status
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user            User      @relation("UserCustomerProfile", fields: [userId], references: [id], onDelete: Cascade)
+  addresses       CustomerAddress[]
+  defaultAddress  CustomerAddress? @relation("DefaultCustomerAddress", fields: [defaultAddressId], references: [id], onDelete: SetNull)
+  cart            Cart?
+  orders          Order[]
+  wishlist        WishlistItem[]
+  reviews         ProductReview[]
+  
+  @@index([isActive])
+  @@map("customer_profiles")
+}
+
+// Customer addresses
+model CustomerAddress {
+  id              Int       @id @default(autoincrement())
+  customerId      Int       @map("customer_id")
+  
+  // Address details
+  name            String
+  phoneNumber     String    @map("phone_number")
+  addressLine1    String    @map("address_line_1")
+  addressLine2    String?   @map("address_line_2")
+  cityId          Int?      @map("city_id")
+  regionId        Int?      @map("region_id")
+  postalCode      String?   @map("postal_code")
+  notes           String?   @db.Text
+  
+  isDefault       Boolean   @default(false) @map("is_default")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  customer        CustomerProfile  @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+  city            GeoCity?  @relation(fields: [cityId], references: [id])
+  region          GeoRegion? @relation(fields: [regionId], references: [id])
+  defaultFor      CustomerProfile? @relation("DefaultCustomerAddress")
+  
+  @@index([customerId])
+  @@index([isDefault])
+  @@map("customer_addresses")
+}
+
+// Wishlist items
+model WishlistItem {
+  id              Int       @id @default(autoincrement())
+  customerId      Int       @map("customer_id")
+  productId       Int       @map("product_id")
+  addedAt         DateTime  @default(now()) @map("added_at")
+  
+  // Relations
+  customer        CustomerProfile  @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  @@unique([customerId, productId])
+  @@index([customerId])
+  @@map("wishlist_items")
+}
+
+// -------------------------------------
+// --- E-COMMERCE VENDOR MANAGEMENT ---
+// -------------------------------------
+
+// Vendor model for store owners (userId as primary key like other profiles)
+model VendorProfile {
+  userId          Int       @id @map("user_id") // User who owns this store
+  
+  // Store info
+  storeName       String    @map("store_name") // Name in Arabic
+  storeNameEn     String?   @map("store_name_en") // Name in English
+  slug            String    @unique
+  description     String?   @db.Text
+  descriptionEn   String?   @map("description_en") @db.Text
+  
+  // Store media
+  logo            String?
+  banner          String?
+  
+  // Contact info
+  email           String?
+  phoneNumber     String?   @map("phone_number")
+  whatsApp        String?   @map("whats_app")
+  website         String?
+  
+  // Address
+  zoneId          Int?      @map("zone_id")
+  cityId          Int?      @map("city_id")
+  regionId        Int?      @map("region_id")
+  address         String?   @db.Text
+  
+  // Store settings
+  commissionRate  Decimal   @default(10) @map("commission_rate") @db.Decimal(5, 2)
+  minPayout       Decimal   @default(100) @map("min_payout") @db.Decimal(15, 2)
+  
+  // Status
+  isVerified      Boolean   @default(false) @map("is_verified")
+  isActive        Boolean   @default(true) @map("is_active")
+  status          String    @default("PENDING") // PENDING, ACTIVE, SUSPENDED
+    // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user            User      @relation("UserVendorProfile", fields: [userId], references: [id], onDelete: Cascade)
+  zone            GeoZone?  @relation(fields: [zoneId], references: [id])
+  city            GeoCity?  @relation(fields: [cityId], references: [id])
+  region          GeoRegion? @relation(fields: [regionId], references: [id])
+  
+  products        Product[]
+  orders          Order[]
+  balance         VendorBalance?
+    @@index([isActive, status])
+  @@index([isVerified])
+  @@index([slug])
+  @@map("vendor_profiles")
+}
+
+// Vendor balance tracking
+model VendorBalance {
+  vendorId          Int       @id @map("vendor_id") // Primary key is vendor ID
+  availableBalance  Decimal   @default(0) @map("available_balance") @db.Decimal(15, 2)
+  pendingBalance    Decimal   @default(0) @map("pending_balance") @db.Decimal(15, 2)
+  totalSales        Decimal   @default(0) @map("total_sales") @db.Decimal(15, 2)
+  totalCommission   Decimal   @default(0) @map("total_commission") @db.Decimal(15, 2)
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  vendor            VendorProfile    @relation(fields: [vendorId], references: [userId], onDelete: Cascade)
+  transactions      VendorTransaction[]
+  payouts           VendorPayout[]
+  
+  @@map("vendor_balances")
+}
+
+// Vendor financial transactions
+model VendorTransaction {
+  id              Int       @id @default(autoincrement())
+  vendorId        Int       @map("vendor_id")
+  
+  // Transaction details
+  type            String    // SALE, PAYOUT, COMMISSION, REFUND, ADJUSTMENT
+  amount          Decimal   @db.Decimal(15, 2)
+  fee             Decimal   @default(0) @db.Decimal(15, 2)
+  netAmount       Decimal   @map("net_amount") @db.Decimal(15, 2)
+  
+  // Reference info
+  status          String    @default("COMPLETED")
+  reference       String?   // Order ID, Payout ID, etc.
+  description     String?   @db.Text
+  
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  vendorBalance   VendorBalance @relation(fields: [vendorId], references: [vendorId], onDelete: Cascade)
+  
+  @@index([vendorId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("vendor_transactions")
+}
+
+// Vendor payouts
+model VendorPayout {
+  id              Int       @id @default(autoincrement())
+  vendorId        Int       @map("vendor_id")
+  
+  // Payout details
+  amount          Decimal   @db.Decimal(15, 2)
+  fee             Decimal   @default(0) @db.Decimal(15, 2)
+  netAmount       Decimal   @map("net_amount") @db.Decimal(15, 2)
+  
+  // Payout info
+  status          String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  paymentMethod   String    @map("payment_method") // BANK_TRANSFER, CASH, etc.
+  paymentDetails  Json?     @map("payment_details")
+  notes           String?   @db.Text
+  
+  // Processing info
+  processedById   Int?      @map("processed_by_id")
+  processedAt     DateTime? @map("processed_at")
+  
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  vendorBalance   VendorBalance @relation(fields: [vendorId], references: [vendorId], onDelete: Cascade)
+  
+  @@index([vendorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("vendor_payouts")
+}
+
+// -------------------------------------
+// --- DELIVERY PERSON MANAGEMENT ---
+// -------------------------------------
+
+// Delivery person profile
+model DeliveryPersonProfile {
+  userId             Int       @id @map("user_id")
+  vehicleType        String    @map("vehicle_type") // CAR, MOTORCYCLE, BICYCLE, etc.
+  vehiclePlateNumber String?   @map("vehicle_plate_number")
+  licenseNumber      String?   @map("license_number")
+  idNumber           String?   @map("id_number")
+  
+  // Geographic coverage
+  zoneId             Int?      @map("zone_id")
+  cityId             Int?      @map("city_id")
+  regionId           Int?      @map("region_id")
+  
+  // Status fields
+  isAvailable        Boolean   @default(true) @map("is_available")
+  isVerified         Boolean   @default(false) @map("is_verified") 
+  verificationDate   DateTime? @map("verification_date")
+  
+  // Performance metrics
+  rating             Decimal?  @db.Decimal(3, 2)
+  completedDeliveries Int      @default(0) @map("completed_deliveries")
+    // Timestamps
+  joinedAt           DateTime  @default(now()) @map("joined_at")
+  isActive           Boolean   @default(true) @map("is_active")
+
+  // Relations
+  user               User      @relation("UserDeliveryProfile", fields: [userId], references: [id], onDelete: Cascade)
+  zone               GeoZone?  @relation(fields: [zoneId], references: [id])
+  city               GeoCity?  @relation(fields: [cityId], references: [id])  
+  region             GeoRegion? @relation(fields: [regionId], references: [id])
+  deliveries         Delivery[]
+  @@index([isActive, isAvailable])
+  @@map("delivery_person_profiles")
+}
+
+// Model for tracking deliveries
+model Delivery {
+  id                 Int            @id @default(autoincrement())
+  deliveryPersonId   Int            @map("delivery_person_id")
+  orderId            Int            @map("order_id")
+  
+  // Delivery details
+  status             DeliveryStatus @default(ASSIGNED)
+  assignedAt         DateTime       @default(now()) @map("assigned_at")
+  pickedUpAt         DateTime?      @map("picked_up_at")
+  estimatedDeliveryTime DateTime?   @map("estimated_delivery_time")
+  actualDeliveryTime DateTime?      @map("actual_delivery_time")
+  
+  // Location data
+  pickupLocation     Json?          @map("pickup_location") // Coordinates or address
+  dropoffLocation    Json           @map("dropoff_location") // Coordinates or address
+  currentLocation    Json?          @map("current_location") // For tracking
+  
+  // Contact and instructions
+  recipientName      String         @map("recipient_name")
+  recipientPhone     String         @map("recipient_phone")
+  deliveryNotes      String?        @map("delivery_notes") @db.Text
+  
+  // Rating and feedback
+  rating             Int?           // 1-5 stars
+  feedback           String?        @db.Text
+  
+  // Financial details
+  deliveryFee        Decimal        @default(0) @map("delivery_fee") @db.Decimal(10, 2)
+  cashOnDelivery     Decimal        @default(0) @map("cash_on_delivery") @db.Decimal(15, 2)
+    createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  
+  // Relations
+  deliveryPerson     DeliveryPersonProfile @relation(fields: [deliveryPersonId], references: [userId])
+  order              Order         @relation(fields: [orderId], references: [id])
+  
+  @@index([deliveryPersonId])
+  @@index([orderId])
+  @@index([status])
+  @@map("deliveries")
+}
+
+// -------------------------------------
+// --- E-COMMERCE CATALOG MANAGEMENT ---
+// -------------------------------------
+
+// Categories
+model Category {
+  id            Int       @id @default(autoincrement())
+  name          String    // Name in Arabic
+  nameEn        String    @map("name_en") // Name in English
+  slug          String    @unique
+  description   String?   @db.Text // Description in Arabic
+  descriptionEn String?   @map("description_en") @db.Text // Description in English
+  
+  // Display and organization
+  imageUrl      String?   @map("image_url")
+  iconUrl       String?   @map("icon_url") // For menu icons
+  bannerUrl     String?   @map("banner_url") // For category page banners
+  sortOrder     Int       @default(0) @map("sort_order")
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  showInMenu    Boolean   @default(true) @map("show_in_menu")
+  isFeatured    Boolean   @default(false) @map("is_featured")
+    // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  subcategories Subcategory[] // Keep the existing relation to subcategories
+  products      Product[] // Direct relation to products at category level
+
+  @@index([isActive])
+  @@index([isActive, isFeatured])
+  @@index([slug])
+  @@map("e_categories")
+}
+
+// Subcategories for e-commerce products
+model Subcategory {
+  id            Int       @id @default(autoincrement())
+  name          String    // Name in Arabic
+  nameEn        String    @map("name_en") // Name in English
+  slug          String    @unique
+  categoryId    Int       @map("category_id")
+  description   String?   @db.Text // Description in Arabic
+  descriptionEn String?   @map("description_en") @db.Text // Description in English
+  
+  // Display and organization
+  imageUrl      String?   @map("image_url")
+  iconUrl       String?   @map("icon_url") // For menu icons
+  bannerUrl     String?   @map("banner_url") // For subcategory page banners
+  sortOrder     Int       @default(0) @map("sort_order")
+  
+  // Status
+  isActive      Boolean   @default(true) @map("is_active")
+  showInMenu    Boolean   @default(true) @map("show_in_menu")
+  isFeatured    Boolean   @default(false) @map("is_featured")
+    // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products Product[] // Direct relation to products at subcategory level
+  @@unique([categoryId, slug], map: "subcategory_unique_slug")
+  @@index([categoryId, isActive])
+  @@index([isActive, isFeatured])
+  @@map("e_subcategories")
+}
+
+// Brands
+model Brand {
+  id               Int       @id @default(autoincrement())
+  name             String    // Name in Arabic
+  nameEn           String    @map("name_en") // Name in English
+  slug             String    @unique
+  logoUrl          String?   @map("logo_url")
+  description      String?   @db.Text // Description in Arabic
+  descriptionEn    String?   @map("description_en") @db.Text // Description in English
+  websiteUrl       String?   @map("website_url")
+  
+  // Status
+  featured         Boolean   @default(false)
+  isActive         Boolean   @default(true) @map("is_active")
+    // Timestamps
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  products       Product[]
+
+  @@index([isActive, featured])
+  @@index([slug])
+  @@map("e_brands")
+}
+
+// -------------------------------------
+// --- E-COMMERCE PRODUCT MANAGEMENT ---
+// -------------------------------------
+
+// Product model for multi-vendor e-commerce
+model Product {
+  id              Int       @id @default(autoincrement())
+  vendorId        Int       @map("vendor_id")
+  categoryId      Int       @map("category_id")
+  subcategoryId   Int?      @map("subcategory_id")
+  brandId         Int?      @map("brand_id")
+  
+  // Product identifiers
+  name            String    // Name in Arabic
+  nameEn          String    @map("name_en") // Name in English
+  slug            String    @unique
+  sku             String?   @unique
+  barcode         String?
+  
+  // Description
+  description     String?   @db.Text // Description in Arabic
+  descriptionEn   String?   @map("description_en") @db.Text // Description in English
+  shortDesc       String?   @map("short_desc") @db.Text // Short description for listings
+  shortDescEn     String?   @map("short_desc_en") @db.Text
+  
+  // Pricing
+  price           Decimal   @db.Decimal(15, 2) // Regular price
+  comparePrice    Decimal?  @map("compare_price") @db.Decimal(15, 2) // Original/crossed-out price
+  costPrice       Decimal   @map("cost_price") @db.Decimal(15, 2) // Cost to vendor
+  
+  // Inventory
+  stockQuantity   Int       @default(0) @map("stock_quantity")
+  lowStockAlert   Int?      @map("low_stock_alert") // Low stock threshold
+  trackInventory  Boolean   @default(true) @map("track_inventory")
+  
+  // Status flags
+  isActive        Boolean   @default(true) @map("is_active")
+  isPublished     Boolean   @default(true) @map("is_published")
+  isFeatured      Boolean   @default(false) @map("is_featured")
+    // SEO
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description") @db.Text
+  metaKeywords    String?   @map("meta_keywords")
+  
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  vendor          VendorProfile @relation(fields: [vendorId], references: [userId], onDelete: Cascade)
+  category        Category    @relation(fields: [categoryId], references: [id])
+  subcategory     Subcategory? @relation(fields: [subcategoryId], references: [id])
+  brand           Brand?      @relation(fields: [brandId], references: [id])
+  
+  // Product related entities
+  images          ProductImage[]
+  attributes      ProductAttribute[]
+  variations      ProductVariation[]
+  
+  // Customer related
+  wishlistItems   WishlistItem[]
+  reviews         ProductReview[]
+  orderItems      OrderItem[]
+  cartItems       CartItem[]
+    @@index([vendorId])
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([isActive, isPublished])
+  @@index([isActive, isFeatured])
+  @@map("e_products")
+}
+
+// Product images
+model ProductImage {
+  id          Int       @id @default(autoincrement())
+  productId   Int       @map("product_id")
+  fileUploadId Int      @map("file_upload_id")
+  alt         String?   // Alt text for accessibility 
+  title       String?   // Title attribute for tooltips
+  sortOrder   Int       @default(0) @map("sort_order")
+  isDefault   Boolean   @default(false) @map("is_default")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileUpload  FileUpload @relation(fields: [fileUploadId], references: [id], onDelete: Restrict)
+  
+  @@index([productId])
+  @@index([isDefault])
+  @@map("e_product_images")
+}
+
+// Product attributes
+model ProductAttribute {
+  id              Int       @id @default(autoincrement())
+  productId       Int       @map("product_id")
+  name            String    // Name in Arabic
+  nameEn          String    @map("name_en") // Name in English
+  options         Json      // Array of options like ["Red", "Blue", "Green"]
+  isRequired      Boolean   @default(false) @map("is_required")
+  isVariant       Boolean   @default(true) @map("is_variant") // Used for variations
+  attributeType   AttributeType @default(TEXT) @map("attribute_type")
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variationAttributes ProductVariationAttribute[]
+  
+  @@index([productId])
+  @@map("e_product_attributes")
+}
+
+// Product variations (for products with options)
+model ProductVariation {
+  id              Int       @id @default(autoincrement())
+  productId       Int       @map("product_id")
+  sku             String?
+  price           Decimal   @db.Decimal(15, 2)
+  comparePrice    Decimal?  @map("compare_price") @db.Decimal(15, 2)
+  stockQuantity   Int       @default(0) @map("stock_quantity")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems      OrderItem[]
+  cartItems       CartItem[]
+  attributes      ProductVariationAttribute[]
+  
+  @@index([productId])
+  @@index([isActive])
+  @@map("e_product_variations")
+}
+
+// Variation attributes
+model ProductVariationAttribute {
+  id              Int       @id @default(autoincrement())
+  variationId     Int       @map("variation_id")
+  attributeId     Int       @map("attribute_id")
+  value           String    // Text value like "XL", "Red", etc.
+  valueEn         String?   @map("value_en") // English value
+  colorHex        String?   @map("color_hex") // For color attributes, store the hex value
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  variation       ProductVariation @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  attribute       ProductAttribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  
+  @@unique([variationId, attributeId])
+  @@index([attributeId]) 
+  @@index([value])
+  @@map("e_product_variation_attributes")
+}
+
+// Product reviews
+model ProductReview {
+  id                Int       @id @default(autoincrement())
+  productId         Int       @map("product_id")
+  customerId        Int       @map("customer_id")
+  orderId           Int?      @map("order_id")
+  
+  rating            Int       @default(5) // 1-5 stars
+  title             String?
+  comment           String?   @db.Text
+  
+  isVerifiedPurchase Boolean  @default(false) @map("is_verified_purchase")
+  status            String    @default("PENDING") // PENDING, APPROVED, REJECTED
+    createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  product           Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  customer          CustomerProfile  @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+  order             Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  @@index([productId])
+  @@index([customerId])
+  @@index([rating])
+  @@index([status])
+  @@map("e_product_reviews")
+}
+
+// -------------------------------------
+// --- E-COMMERCE SHOPPING CART ---
+// -------------------------------------
+
+// Shopping cart model
+model Cart {
+  id          Int       @id @default(autoincrement())
+  customerId  Int       @unique @map("customer_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  customer    CustomerProfile @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+  items       CartItem[]
+  
+  @@index([customerId])
+  @@map("e_carts")
+}
+
+// Shopping cart items
+model CartItem {
+  id          Int       @id @default(autoincrement())
+  cartId      Int       @map("cart_id")
+  productId   Int       @map("product_id")
+  variationId Int?      @map("variation_id")
+  quantity    Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  cart        Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variation   ProductVariation? @relation(fields: [variationId], references: [id], onDelete: SetNull)
+  
+  @@unique([cartId, productId])
+  @@index([cartId])
+  @@index([productId])
+  @@map("e_cart_items")
+}
+
+// -------------------------------------
+// --- E-COMMERCE ORDER MANAGEMENT ---
+// -------------------------------------
+
+// Orders
+model Order {
+  id                Int        @id @default(autoincrement())
+  orderNumber       String     @unique @map("order_number")
+  customerId        Int        @map("customer_id")
+  vendorId          Int        @map("vendor_id")
+  
+  // Order amounts
+  subtotal          Decimal    @db.Decimal(15, 2)
+  shipping          Decimal    @default(0) @db.Decimal(15, 2)
+  tax               Decimal    @default(0) @db.Decimal(15, 2)
+  discount          Decimal    @default(0) @db.Decimal(15, 2)
+  total             Decimal    @db.Decimal(15, 2)
+  
+  // Coupon
+  couponCode        String?    @map("coupon_code")
+  
+  // Status
+  status            OrderStatus @default(PENDING)
+  paymentStatus     PaymentStatus @default(UNPAID) @map("payment_status")
+  paymentMethod     String?    @map("payment_method")
+  
+  // Shipping
+  shippingMethod    String?    @map("shipping_method")
+  shippingAddress   Json?      @map("shipping_address")
+  trackingNumber    String?    @map("tracking_number")
+  
+  // Notes
+  customerNotes     String?    @map("customer_notes") @db.Text
+  vendorNotes       String?    @map("vendor_notes") @db.Text
+  
+  // Timestamps
+  placedAt          DateTime   @default(now()) @map("placed_at")
+  paidAt            DateTime?  @map("paid_at")
+  processedAt       DateTime?  @map("processed_at")
+  shippedAt         DateTime?  @map("shipped_at")
+  deliveredAt       DateTime?  @map("delivered_at")
+  cancelledAt       DateTime?  @map("cancelled_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+  
+  // Relations
+  customer          CustomerProfile  @relation(fields: [customerId], references: [userId])
+  vendor            VendorProfile    @relation(fields: [vendorId], references: [userId])
+  items             OrderItem[]
+  statusHistory     OrderStatusHistory[]
+  reviews           ProductReview[]
+  deliveries        Delivery[]
+  
+  @@index([customerId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("e_orders")
+}
+
+// Order items
+model OrderItem {
+  id                Int       @id @default(autoincrement())
+  orderId           Int       @map("order_id")
+  productId         Int       @map("product_id")
+  variationId       Int?      @map("variation_id")
+  
+  // Item details
+  name              String
+  sku               String?
+  price             Decimal   @db.Decimal(15, 2)
+  quantity          Int
+  subtotal          Decimal   @db.Decimal(15, 2)
+  
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  order             Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product           Product   @relation(fields: [productId], references: [id])
+  variation         ProductVariation? @relation(fields: [variationId], references: [id])
+  
+  @@index([orderId])
+  @@index([productId])
+  @@map("e_order_items")
+}
+
+// Order status history
+model OrderStatusHistory {
+  id          Int         @id @default(autoincrement())
+  orderId     Int         @map("order_id")
+  status      OrderStatus
+  note        String?     @db.Text
+  createdById Int         @map("created_by_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  
+  // Relations
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+  @@map("e_order_status_history")
+}
+
+// -------------------------------------
+// --- FILE UPLOAD MANAGEMENT ---
+// -------------------------------------
+
+model FileUpload {
+  id           Int       @id @default(autoincrement())
+  originalName String    @map("original_name")
+  filename     String
+  path         String
+  mimetype     String
+  size         Int // File size in bytes
+  entityType   String?   @map("entity_type") // Type of entity this file is related to
+  entityId     String?   @map("entity_id") // ID of the related entity, kept as string for flexibility
+  isPublic     Boolean   @default(true) @map("is_public")
+  userId       Int?      @map("user_id")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user         User? @relation("UserUploads", fields: [userId], references: [id], onDelete: SetNull)
+  productImages ProductImage[]
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([isPublic])
+  @@map("file_uploads")
+}
+
+// -------------------------------------
+// --- AUDIT AND SETTINGS ---
+// -------------------------------------
+
+// Audit log
+model AuditLog {
+  id          BigInt   @id @default(autoincrement())
+  timestamp   DateTime @default(now())
+  userId      Int?     @map("user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id") // Kept as string for flexibility
+  oldValue    Json?    @map("old_value")
+  newValue    Json?    @map("new_value")
+  ipAddress   String?  @map("ip_address")
+  requestPath String?  @map("request_path") @db.Text
+  userAgent   String?  @map("user_agent") @db.Text
+  status      String   @default("SUCCESS")
+  notes       String?  @db.Text
+  // No deletedAt - audit logs are immutable for security audit purposes
+
+  user User? @relation("UserActions", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@map("audit_logs")
+}
+
+// System settings table
+model SystemSetting {
+  key           String   @id @db.VarChar(100)
+  value         String   @db.Text
+  dataType      String   @map("data_type") // string, number, boolean, json
+  isSecret      Boolean  @default(false) @map("is_secret")
+  description   String?  @db.Text // الوصف بالعربية
+  descriptionEn String?  @map("description_en") @db.Text // الوصف بالإنجليزية
+  updatedById   Int?     @map("updated_by_id")
+  updatedAt     DateTime @updatedAt
+  // No deletedAt - settings are critical and not deleted
+
+  @@map("system_settings")
+}
+
+// OTP verification
+model OtpVerification {
+  id          Int       @id @default(autoincrement())
+  phoneNumber String
+  otpCode     String
+  type        String // REGISTER, LOGIN, PASSWORD_RESET
+  isVerified  Boolean   @default(false)
+  attempts    Int       @default(0)
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([phoneNumber, type])
+  @@index([phoneNumber, otpCode, type])
+}
