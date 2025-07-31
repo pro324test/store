@@ -538,4 +538,224 @@ export class AdminService {
 
     return categories;
   }
+
+  // ==================== Dashboard Statistics ====================
+
+  async getDashboardStats() {
+    const [
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      totalVendors,
+      activeUsersCount,
+      pendingOrdersCount,
+      recentOrders,
+    ] = await Promise.all([
+      // Total users count
+      this.prisma.user.count({
+        where: { isActive: true },
+      }),
+      
+      // Total products count  
+      this.prisma.product.count({
+        where: { isActive: true, isPublished: true },
+      }),
+      
+      // Total orders count
+      this.prisma.order.count(),
+      
+      // Total vendors count
+      this.prisma.vendorProfile.count({
+        where: { isActive: true },
+      }),
+      
+      // Active users in last 30 days
+      this.prisma.user.count({
+        where: {
+          isActive: true,
+          lastLoginAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+          },
+        },
+      }),
+      
+      // Pending orders count
+      this.prisma.order.count({
+        where: { status: 'PENDING' },
+      }),
+      
+      // Recent orders for activity feed
+      this.prisma.order.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          customer: {
+            include: { user: { select: { fullName: true } } },
+          },
+          vendor: {
+            select: { storeName: true },
+          },
+        },
+      }),
+    ]);
+
+    // Calculate growth percentages (simplified - comparing with previous period)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+    const [
+      usersLastMonth,
+      productsLastMonth,
+      ordersLastMonth,
+    ] = await Promise.all([
+      this.prisma.user.count({
+        where: {
+          isActive: true,
+          createdAt: {
+            gte: sixtyDaysAgo,
+            lt: thirtyDaysAgo,
+          },
+        },
+      }),
+      this.prisma.product.count({
+        where: {
+          isActive: true,
+          isPublished: true,
+          createdAt: {
+            gte: sixtyDaysAgo,
+            lt: thirtyDaysAgo,
+          },
+        },
+      }),
+      this.prisma.order.count({
+        where: {
+          createdAt: {
+            gte: sixtyDaysAgo,
+            lt: thirtyDaysAgo,
+          },
+        },
+      }),
+    ]);
+
+    const [
+      usersThisMonth,
+      productsThisMonth,
+      ordersThisMonth,
+    ] = await Promise.all([
+      this.prisma.user.count({
+        where: {
+          isActive: true,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      }),
+      this.prisma.product.count({
+        where: {
+          isActive: true,
+          isPublished: true,
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      }),
+      this.prisma.order.count({
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+        },
+      }),
+    ]);
+
+    // Calculate growth percentages
+    const userGrowth = usersLastMonth > 0 
+      ? Math.round(((usersThisMonth - usersLastMonth) / usersLastMonth) * 100) 
+      : 0;
+    
+    const productGrowth = productsLastMonth > 0 
+      ? Math.round(((productsThisMonth - productsLastMonth) / productsLastMonth) * 100) 
+      : 0;
+    
+    const orderGrowth = ordersLastMonth > 0 
+      ? Math.round(((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100) 
+      : 0;
+
+    // System health check (simplified)
+    const systemHealth = await this.checkSystemHealth();
+
+    return {
+      totalUsers,
+      totalProducts,
+      totalOrders,
+      totalVendors,
+      activeUsersCount,
+      pendingOrdersCount,
+      userGrowth,
+      productGrowth,
+      orderGrowth,
+      systemHealth,
+      recentActivity: recentOrders.map(order => ({
+        id: order.id,
+        type: 'ORDER',
+        description: `New order #${order.orderNumber} from ${order.customer.user.fullName}`,
+        storeName: order.vendor.storeName,
+        amount: order.total,
+        createdAt: order.createdAt,
+        status: order.status,
+      })),
+    };
+  }
+
+  private async checkSystemHealth() {
+    try {
+      // Check database connectivity
+      await this.prisma.$queryRaw`SELECT 1`;
+      
+      // Check for any critical system issues
+      const criticalIssues = await Promise.all([
+        // Check for orders stuck in processing for too long
+        this.prisma.order.count({
+          where: {
+            status: 'PROCESSING',
+            createdAt: {
+              lt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 24 hours ago
+            },
+          },
+        }),
+        
+        // Check for failed deliveries
+        this.prisma.delivery.count({
+          where: {
+            status: 'FAILED',
+            createdAt: {
+              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+            },
+          },
+        }),
+      ]);
+
+      const [stuckOrders, failedDeliveries] = criticalIssues;
+      
+      if (stuckOrders > 10 || failedDeliveries > 5) {
+        return {
+          status: 'WARNING',
+          message: 'Some system issues detected',
+          details: {
+            stuckOrders,
+            failedDeliveries,
+          },
+        };
+      }
+
+      return {
+        status: 'HEALTHY',
+        message: 'All systems operational',
+        details: {
+          stuckOrders,
+          failedDeliveries,
+        },
+      };
+    } catch (error) {
+      return {
+        status: 'ERROR',
+        message: 'Database connectivity issues',
+        details: { error: error.message },
+      };
+    }
+  }
 }

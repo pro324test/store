@@ -5,6 +5,7 @@ import {
   SystemStaffRole,
   Permission,
   SystemStaffRolePermission,
+  DashboardStats,
 } from './admin.model';
 
 @Resolver(() => SystemStaffProfile)
@@ -204,5 +205,12 @@ export class AdminResolver {
   @Query(() => [Permission], { name: 'permissionCategories' })
   getAllCategories() {
     return this.adminService.getAllCategories();
+  }
+
+  // ==================== Dashboard Stats Resolver ====================
+
+  @Query(() => DashboardStats, { name: 'dashboardStats' })
+  getDashboardStats() {
+    return this.adminService.getDashboardStats();
   }
 }

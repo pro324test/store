@@ -454,7 +454,7 @@ model WishlistItem {
 
 // Vendor model for store owners (userId as primary key like other profiles)
 model VendorProfile {
-  userId          Int       @id @map("user_id") // User who owns this store
+  userId          Int       @id @unique @map("user_id") // User who owns this store - one shop per user
   
   // Store info
   storeName       String    @map("store_name") // Name in Arabic

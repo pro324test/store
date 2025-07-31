@@ -97,3 +97,75 @@ export class SystemStaffRolePermission {
   @Field(() => Permission)
   permission: Permission;
 }
+
+@ObjectType()
+export class SystemHealth {
+  @Field()
+  status: string; // 'HEALTHY', 'WARNING', 'ERROR'
+
+  @Field()
+  message: string;
+
+  @Field(() => String, { nullable: true })
+  details?: string;
+}
+
+@ObjectType()
+export class DashboardActivity {
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  type: string;
+
+  @Field()
+  description: string;
+
+  @Field(() => String, { nullable: true })
+  storeName?: string;
+
+  @Field(() => String, { nullable: true })
+  amount?: string;
+
+  @Field()
+  createdAt: Date;
+
+  @Field()
+  status: string;
+}
+
+@ObjectType()
+export class DashboardStats {
+  @Field(() => Int)
+  totalUsers: number;
+
+  @Field(() => Int)
+  totalProducts: number;
+
+  @Field(() => Int)
+  totalOrders: number;
+
+  @Field(() => Int)
+  totalVendors: number;
+
+  @Field(() => Int)
+  activeUsersCount: number;
+
+  @Field(() => Int)
+  pendingOrdersCount: number;
+
+  @Field(() => Int)
+  userGrowth: number; // Percentage growth
+
+  @Field(() => Int)
+  productGrowth: number; // Percentage growth
+
+  @Field(() => Int)
+  orderGrowth: number; // Percentage growth
+
+  @Field(() => SystemHealth)
+  systemHealth: SystemHealth;
+
+  @Field(() => [DashboardActivity])
+  recentActivity: DashboardActivity[];
+}

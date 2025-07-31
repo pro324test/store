@@ -63,6 +63,15 @@ export class VendorService {
       throw new Error('Application is not in pending status');
     }
 
+    // Check if user already has a vendor profile (one shop per user constraint)
+    const existingVendorProfile = await this.prisma.vendorProfile.findUnique({
+      where: { userId: application.userId },
+    });
+
+    if (existingVendorProfile) {
+      throw new Error('User already has a vendor profile. Only one shop per user is allowed.');
+    }
+
     // Start transaction
     return this.prisma.$transaction(async (tx) => {
       // Update application status
