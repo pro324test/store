@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useTranslations } from 'next-intl';
 import { 
   GET_ALL_USERS, 
   DELETE_USER, 
@@ -50,6 +51,8 @@ interface UserFormData {
 }
 
 export function UserManagement() {
+  const t = useTranslations('admin.user_management');
+  const tCommon = useTranslations('common');
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -87,7 +90,7 @@ export function UserManagement() {
 
   const handleCreateUser = async () => {
     if (!formData.fullName || !formData.phoneNumber) {
-      alert('Please fill in required fields');
+      alert(t('form.required_fields'));
       return;
     }
 
@@ -104,13 +107,13 @@ export function UserManagement() {
       setFormData({ fullName: '', phoneNumber: '', email: '' });
     } catch (error) {
       console.error('Error creating user:', error);
-      alert('Failed to create user');
+      alert(t('messages.failed_create'));
     }
   };
 
   const handleUpdateUser = async () => {
     if (!editingUser || !formData.fullName || !formData.phoneNumber) {
-      alert('Please fill in required fields');
+      alert(t('form.required_fields'));
       return;
     }
 
@@ -128,12 +131,12 @@ export function UserManagement() {
       setFormData({ fullName: '', phoneNumber: '', email: '' });
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Failed to update user');
+      alert(t('messages.failed_update'));
     }
   };
 
   const handleDeleteUser = async (userId: number, userName: string) => {
-    if (!confirm(`Are you sure you want to delete user "${userName}"?`)) {
+    if (!confirm(t('actions.confirm_delete', { userName }))) {
       return;
     }
 
@@ -143,7 +146,7 @@ export function UserManagement() {
       });
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete user');
+      alert(t('messages.failed_delete'));
     }
   };
 
@@ -154,7 +157,7 @@ export function UserManagement() {
       });
     } catch (error) {
       console.error('Error toggling user status:', error);
-      alert('Failed to toggle user status');
+      alert(t('messages.failed_toggle_status'));
     }
   };
 
@@ -187,7 +190,7 @@ export function UserManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading users...</div>
+        <div className="text-lg">{t('loading_users')}</div>
       </div>
     );
   }
@@ -195,7 +198,7 @@ export function UserManagement() {
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-red-600">Error loading users: {error.message}</div>
+        <div className="text-lg text-red-600">{t('error_loading_users')}: {error.message}</div>
       </div>
     );
   }
@@ -207,9 +210,9 @@ export function UserManagement() {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Users className="w-6 h-6" />
-            User Management
+            {t('title')}
           </h2>
-          <p className="text-gray-600">Manage system users and their access</p>
+          <p className="text-gray-600">{t('description')}</p>
         </div>
         
         <Button 
@@ -221,7 +224,7 @@ export function UserManagement() {
           className="flex items-center gap-2"
         >
           <UserPlus className="w-4 h-4" />
-          Add User
+          {t('add_user')}
         </Button>
       </div>
 
@@ -232,7 +235,7 @@ export function UserManagement() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
-                placeholder="Search users by name, phone, or email..."
+                placeholder={t('search_placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -240,7 +243,7 @@ export function UserManagement() {
             </div>
             <Button variant="outline" className="flex items-center gap-2">
               <Filter className="w-4 h-4" />
-              Filters
+              {t('filters')}
             </Button>
           </div>
         </CardContent>
@@ -251,52 +254,52 @@ export function UserManagement() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {editingUser ? `Edit User: ${editingUser.fullName}` : 'Create New User'}
+              {editingUser ? `${t('edit_user')}: ${editingUser.fullName}` : t('create_new_user')}
             </CardTitle>
             <CardDescription>
-              {editingUser ? 'Update user information' : 'Add a new user to the system'}
+              {editingUser ? t('update_user_info') : t('add_new_user_system')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="fullName">Full Name *</Label>
+                <Label htmlFor="fullName">{t('form.full_name')} *</Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="Enter full name"
+                  placeholder={t('form.full_name_placeholder')}
                 />
               </div>
               
               <div>
-                <Label htmlFor="phoneNumber">Phone Number *</Label>
+                <Label htmlFor="phoneNumber">{t('form.phone_number')} *</Label>
                 <Input
                   id="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  placeholder="Enter phone number"
+                  placeholder={t('form.phone_placeholder')}
                 />
               </div>
               
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('form.email')}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Enter email address"
+                  placeholder={t('form.email_placeholder')}
                 />
               </div>
             </div>
             
             <div className="flex gap-2">
               <Button onClick={editingUser ? handleUpdateUser : handleCreateUser}>
-                {editingUser ? 'Update User' : 'Create User'}
+                {editingUser ? t('form.update_user') : t('form.create_user')}
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
-                Cancel
+                {tCommon('cancel')}
               </Button>
             </div>
           </CardContent>
@@ -306,27 +309,27 @@ export function UserManagement() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users ({filteredUsers.length})</CardTitle>
+          <CardTitle>{t('all_users')} ({filteredUsers.length})</CardTitle>
           <CardDescription>
-            Manage and monitor all system users
+            {t('manage_monitor_users')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredUsers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No users found matching your search criteria.
+              {t('no_users_found')}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-gray-200 bg-gray-50">
-                    <th className="text-left p-4 font-semibold text-gray-900">User</th>
-                    <th className="text-left p-4 font-semibold text-gray-900">Contact</th>
-                    <th className="text-left p-4 font-semibold text-gray-900">Status</th>
-                    <th className="text-left p-4 font-semibold text-gray-900">Roles</th>
-                    <th className="text-left p-4 font-semibold text-gray-900">Joined</th>
-                    <th className="text-right p-4 font-semibold text-gray-900">Actions</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">{t('table_headers.user')}</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">{t('table_headers.contact')}</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">{t('table_headers.status')}</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">{t('table_headers.roles')}</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">{t('table_headers.joined')}</th>
+                    <th className="text-right p-4 font-semibold text-gray-900">{t('table_headers.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -356,7 +359,7 @@ export function UserManagement() {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user.isActive ? t('status.active') : t('status.inactive')}
                         </span>
                       </td>
                       <td className="p-4">
@@ -371,12 +374,12 @@ export function UserManagement() {
                                     : 'bg-gray-100 text-gray-600'
                                 }`}
                               >
-                                {role.role} {role.isPrimary && '(Primary)'}
+                                {role.role} {role.isPrimary && `(${t('roles.primary')})`}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-gray-400 text-sm">No roles</span>
+                          <span className="text-gray-400 text-sm">{t('roles.no_roles')}</span>
                         )}
                       </td>
                       <td className="p-4">
@@ -392,7 +395,7 @@ export function UserManagement() {
                             size="sm"
                             onClick={() => handleToggleUserStatus(user.id)}
                             className="flex items-center gap-1 text-xs"
-                            title={user.isActive ? 'Deactivate user' : 'Activate user'}
+                            title={user.isActive ? t('actions.deactivate_user') : t('actions.activate_user')}
                           >
                             {user.isActive ? (
                               <UserX className="w-3 h-3" />
@@ -406,7 +409,7 @@ export function UserManagement() {
                             size="sm"
                             onClick={() => startEdit(user)}
                             className="flex items-center gap-1 text-xs"
-                            title="Edit user"
+                            title={t('actions.edit_user')}
                           >
                             <Edit className="w-3 h-3" />
                           </Button>
@@ -416,7 +419,7 @@ export function UserManagement() {
                             size="sm"
                             onClick={() => handleDeleteUser(user.id, user.fullName)}
                             className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 hover:border-red-300"
-                            title="Delete user"
+                            title={t('actions.delete_user')}
                           >
                             <Trash2 className="w-3 h-3" />
                           </Button>
