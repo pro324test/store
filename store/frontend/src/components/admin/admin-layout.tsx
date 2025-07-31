@@ -66,7 +66,7 @@ export function AdminLayout({ children, title, description }: AdminLayoutProps) 
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    onClick={() => router.push('/dashboard')}
+                    onClick={() => router.push('/admin')}
                   >
                     <User className="w-4 h-4" />
                   </Button>
