@@ -239,35 +239,7 @@ function AdminDashboardContent() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage user accounts and roles
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => router.push('/admin/users')}
-              >
-                View All Users
-              </Button>
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={() => router.push('/admin/users/roles')}
-              >
-                Manage Roles
-              </Button>
-              <Button className="w-full" variant="outline">
-                User Reports
-              </Button>
-            </CardContent>
-          </Card>
-
+        <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Product Management</CardTitle>

@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { GraphQLJSON } from 'graphql-type-json';
 
 @ObjectType()
 export class Permission {
@@ -106,8 +107,8 @@ export class SystemHealth {
   @Field()
   message: string;
 
-  @Field(() => String, { nullable: true })
-  details?: string;
+  @Field(() => GraphQLJSON, { nullable: true })
+  details?: any;
 }
 
 @ObjectType()
