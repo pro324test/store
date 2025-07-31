@@ -40,7 +40,6 @@ interface User {
     role: string;
     isActive: boolean;
     isPrimary: boolean;
-    assignedAt: string;
   }>;
 }
 

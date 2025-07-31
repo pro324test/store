@@ -16,7 +16,6 @@ export const GET_ALL_USERS = gql`
         role
         isActive
         isPrimary
-        assignedAt
       }
     }
   }
@@ -334,7 +333,6 @@ export const ASSIGN_USER_ROLE = gql`
       role
       isActive
       isPrimary
-      assignedAt
     }
   }
 `;
@@ -352,7 +350,6 @@ export const UPDATE_USER_ROLE = gql`
       role
       isActive
       isPrimary
-      assignedAt
     }
   }
 `;
