@@ -303,7 +303,7 @@ export function UserManagement() {
         </Card>
       )}
 
-      {/* Users List */}
+      {/* Users Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Users ({filteredUsers.length})</CardTitle>
@@ -312,109 +312,122 @@ export function UserManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredUsers.map((user) => (
-              <div key={user.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{user.fullName}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <Phone className="w-4 h-4" />
-                        {user.phoneNumber}
-                      </div>
-                      {user.email && (
-                        <div className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          {user.email}
+          {filteredUsers.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No users found matching your search criteria.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className="text-left p-4 font-semibold text-gray-900">User</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">Contact</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">Status</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">Roles</th>
+                    <th className="text-left p-4 font-semibold text-gray-900">Joined</th>
+                    <th className="text-right p-4 font-semibold text-gray-900">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((user) => (
+                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="p-4">
+                        <div className="font-semibold text-gray-900">{user.fullName}</div>
+                        <div className="text-sm text-gray-500">ID: {user.id}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Phone className="w-4 h-4" />
+                            {user.phoneNumber}
+                          </div>
+                          {user.email && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Mail className="w-4 h-4" />
+                              {user.email}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        Joined {formatDate(user.createdAt)}
-                      </div>
-                    </div>
-                    
-                    {user.roles.length > 0 && (
-                      <div className="mt-2">
-                        <div className="flex flex-wrap gap-1">
-                          {user.roles.map((role) => (
-                            <span 
-                              key={role.id}
-                              className={`px-2 py-1 rounded text-xs ${
-                                role.isActive
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-gray-100 text-gray-600'
-                              }`}
-                            >
-                              {role.role} {role.isPrimary && '(Primary)'}
-                            </span>
-                          ))}
+                      </td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.isActive 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {user.roles.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {user.roles.map((role) => (
+                              <span 
+                                key={role.id}
+                                className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                                  role.isActive
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {role.role} {role.isPrimary && '(Primary)'}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">No roles</span>
+                        )}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          {formatDate(user.createdAt)}
                         </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleUserStatus(user.id)}
-                      className="flex items-center gap-1"
-                    >
-                      {user.isActive ? (
-                        <>
-                          <UserX className="w-4 h-4" />
-                          Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <UserCheck className="w-4 h-4" />
-                          Activate
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => startEdit(user)}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </Button>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteUser(user.id, user.fullName)}
-                      className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            {filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                No users found matching your search criteria.
-              </div>
-            )}
-          </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleUserStatus(user.id)}
+                            className="flex items-center gap-1 text-xs"
+                            title={user.isActive ? 'Deactivate user' : 'Activate user'}
+                          >
+                            {user.isActive ? (
+                              <UserX className="w-3 h-3" />
+                            ) : (
+                              <UserCheck className="w-3 h-3" />
+                            )}
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => startEdit(user)}
+                            className="flex items-center gap-1 text-xs"
+                            title="Edit user"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id, user.fullName)}
+                            className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 hover:border-red-300"
+                            title="Delete user"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
