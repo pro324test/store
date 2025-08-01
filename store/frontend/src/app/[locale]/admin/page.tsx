@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Shield, Users, Package, TrendingUp, Settings, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { useQuery } from '@apollo/client';
 import { GET_DASHBOARD_STATS } from '@/lib/graphql/admin';
+import { useTranslations } from 'next-intl';
 
 interface DashboardStats {
   totalUsers: number;
@@ -43,6 +44,7 @@ interface DashboardStats {
 function AdminDashboardContent() {
   const { user } = useAuth();
   const router = useRouter();
+  const t = useTranslations();
   const { data, loading, error } = useQuery<{ dashboardStats: DashboardStats }>(GET_DASHBOARD_STATS, {
     errorPolicy: 'all',
   });
@@ -57,13 +59,13 @@ function AdminDashboardContent() {
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <Shield className="w-16 h-16 text-red-500 mx-auto" />
           <h1 className="text-2xl font-bold text-red-600">
-            Access Denied
+            {t('dashboard.access_denied')}
           </h1>
           <p className="text-muted-foreground">
-            You don&apos;t have permission to access the admin dashboard.
+            {t('dashboard.no_admin_permission')}
           </p>
           <Button onClick={() => router.back()}>
-            Go Back
+            {t('dashboard.go_back')}
           </Button>
         </div>
       </div>
@@ -90,7 +92,7 @@ function AdminDashboardContent() {
       case 'HEALTHY':
         return 'text-green-600';
       case 'WARNING':
-        return 'text-yellow-600';
+        return 'text-yellow-600'; 
       case 'ERROR':
         return 'text-red-600';
       default:
@@ -100,7 +102,7 @@ function AdminDashboardContent() {
 
   const formatGrowth = (growth: number) => {
     const sign = growth >= 0 ? '+' : '';
-    return `${sign}${growth}% from last month`;
+    return `${sign}${growth}% ${t('dashboard.from_last_month')}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -108,14 +110,14 @@ function AdminDashboardContent() {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1) return t('dashboard.just_now');
+    if (diffInMinutes < 60) return t('dashboard.minutes_ago', { count: diffInMinutes });
     
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    if (diffInHours < 24) return t('dashboard.hours_ago', { count: diffInHours });
     
     const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    return t('dashboard.days_ago', { count: diffInDays });
   };
 
   const getActivityStatusColor = (status: string) => {
@@ -137,15 +139,15 @@ function AdminDashboardContent() {
 
   return (
     <AdminLayout 
-      title="Admin Dashboard" 
-      description="System overview and management tools"
+      title={t('dashboard.admin_dashboard')} 
+      description={t('dashboard.system_overview')}
     >
       <div className="space-y-6">
         {/* Loading State */}
         {loading && (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
-            <p className="mt-2 text-muted-foreground">Loading dashboard data...</p>
+            <p className="mt-2 text-muted-foreground">{t('dashboard.loading_dashboard_data')}</p>
           </div>
         )}
 
@@ -153,10 +155,10 @@ function AdminDashboardContent() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-red-800">
-              Failed to load dashboard data: {error.message}
+              {t('dashboard.failed_to_load_dashboard')}: {error.message}
             </p>
             <p className="text-sm text-red-600 mt-1">
-              Using fallback data for now.
+              {t('dashboard.using_fallback_data')}
             </p>
           </div>
         )}
@@ -166,7 +168,7 @@ function AdminDashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Users
+                {t('dashboard.total_users')}
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -183,7 +185,7 @@ function AdminDashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Products
+                {t('dashboard.total_products')}
               </CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -200,7 +202,7 @@ function AdminDashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Orders
+                {t('dashboard.total_orders')}
               </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -217,7 +219,7 @@ function AdminDashboardContent() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                System Health
+                {t('dashboard.system_health')}
               </CardTitle>
               {loading ? (
                 <Settings className="h-4 w-4 text-muted-foreground" />
@@ -227,12 +229,12 @@ function AdminDashboardContent() {
             </CardHeader>
             <CardContent>
               <div className={`text-2xl font-bold ${getHealthColor(stats?.systemHealth?.status || 'UNKNOWN')}`}>
-                {loading ? '...' : (stats?.systemHealth?.status === 'HEALTHY' ? 'Healthy' : 
-                  stats?.systemHealth?.status === 'WARNING' ? 'Warning' :
-                  stats?.systemHealth?.status === 'ERROR' ? 'Error' : 'Unknown')}
+                {loading ? '...' : (stats?.systemHealth?.status === 'HEALTHY' ? t('dashboard.healthy') : 
+                  stats?.systemHealth?.status === 'WARNING' ? t('dashboard.warning') :
+                  stats?.systemHealth?.status === 'ERROR' ? t('dashboard.error') : t('dashboard.unknown'))}
               </div>
               <p className="text-xs text-muted-foreground">
-                {loading ? '...' : (stats?.systemHealth?.message || 'Status unknown')}
+                {loading ? '...' : (stats?.systemHealth?.message || t('dashboard.status_unknown'))}
               </p>
             </CardContent>
           </Card>
@@ -242,40 +244,40 @@ function AdminDashboardContent() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Product Management</CardTitle>
+              <CardTitle>{t('dashboard.product_management')}</CardTitle>
               <CardDescription>
-                Manage products and categories
+                {t('dashboard.manage_products_categories')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button className="w-full" variant="outline">
-                View All Products
+                {t('dashboard.view_all_products')}
               </Button>
               <Button className="w-full" variant="outline">
-                Manage Categories
+                {t('dashboard.manage_categories')}
               </Button>
               <Button className="w-full" variant="outline">
-                Inventory Reports
+                {t('dashboard.inventory_reports')}
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>System Settings</CardTitle>
+              <CardTitle>{t('dashboard.system_settings')}</CardTitle>
               <CardDescription>
-                Configure system parameters
+                {t('dashboard.configure_system_parameters')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button className="w-full" variant="outline">
-                Site Configuration
+                {t('dashboard.site_configuration')}
               </Button>
               <Button className="w-full" variant="outline">
-                Payment Settings
+                {t('dashboard.payment_settings')}
               </Button>
               <Button className="w-full" variant="outline">
-                System Logs
+                {t('dashboard.system_logs')}
               </Button>
             </CardContent>
           </Card>
@@ -284,9 +286,9 @@ function AdminDashboardContent() {
         {/* Recent Activities */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Admin Activities</CardTitle>
+            <CardTitle>{t('dashboard.recent_admin_activities')}</CardTitle>
             <CardDescription>
-              Latest system activities and changes
+              {t('dashboard.latest_system_activities')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -323,7 +325,7 @@ function AdminDashboardContent() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No recent activities</p>
+                    <p>{t('dashboard.no_recent_activities')}</p>
                   </div>
                 )}
               </div>

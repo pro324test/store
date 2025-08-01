@@ -18,7 +18,9 @@ export function AuthenticatedLayout({ children }: Props) {
       <div
         id='content'
         className={cn(
-          'ml-auto w-full max-w-full',
+          'w-full max-w-full',
+          // RTL-aware margin classes using logical properties
+          'ms-auto',
           'peer-data-[state=collapsed]:w-[calc(100%-var(--sidebar-width-icon)-1rem)]',
           'peer-data-[state=expanded]:w-[calc(100%-var(--sidebar-width))]',
           'sm:transition-[width] sm:duration-200 sm:ease-linear',

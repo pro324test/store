@@ -132,7 +132,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* RTL Support - Using body classes for consistent hydration */
+  /* Enhanced RTL Support - Using body classes for consistent hydration */
   body.rtl,
   body.rtl * {
     font-family: var(--font-arabic), var(--font-geist-sans), system-ui, sans-serif;
@@ -145,7 +145,7 @@
     direction: ltr;
   }
   
-  /* Consistent text alignment to prevent shifts */
+  /* Text alignment that prevents layout shifts */
   body.rtl * {
     text-align: start;
   }
@@ -154,24 +154,30 @@
     text-align: start;
   }
   
-  /* Grid and flex layout direction handling */
-  body.rtl .grid {
+  /* Sidebar RTL Support */
+  body.rtl [data-sidebar] {
     direction: rtl;
   }
   
-  body.ltr .grid {
-    direction: ltr;
+  body.rtl [data-sidebar="sidebar"] {
+    --sidebar-width: 16rem;
+    --sidebar-width-icon: 3rem;
   }
   
-  body.rtl .flex {
-    direction: rtl;
+  /* Sidebar positioning for RTL */
+  body.rtl .peer-data-\[state\=collapsed\]\:w-\[calc\(100\%-var\(--sidebar-width-icon\)-1rem\)\] {
+    width: calc(100% - var(--sidebar-width-icon) - 1rem);
+    margin-inline-end: auto;
+    margin-inline-start: 0;
   }
   
-  body.ltr .flex {
-    direction: ltr;
+  body.rtl .peer-data-\[state\=expanded\]\:w-\[calc\(100\%-var\(--sidebar-width\)\)\] {
+    width: calc(100% - var(--sidebar-width));
+    margin-inline-end: auto;
+    margin-inline-start: 0;
   }
   
-  /* Spacing utilities that respect direction */
+  /* Enhanced spacing utilities with logical properties */
   body.rtl .space-x-1 > * + * {
     margin-inline-start: 0.25rem;
     margin-inline-end: 0;
@@ -184,6 +190,11 @@
   
   body.rtl .space-x-4 > * + * {
     margin-inline-start: 1rem;
+    margin-inline-end: 0;
+  }
+  
+  body.rtl .space-x-6 > * + * {
+    margin-inline-start: 1.5rem;
     margin-inline-end: 0;
   }
   
@@ -202,15 +213,152 @@
     margin-inline-end: 0;
   }
   
-  /* Input alignment that prevents layout shifts */
-  body.rtl input, body.rtl textarea {
+  body.ltr .space-x-6 > * + * {
+    margin-inline-start: 1.5rem;
+    margin-inline-end: 0;
+  }
+  
+  /* Form input alignment that prevents layout shifts */
+  body.rtl input, body.rtl textarea, body.rtl select {
     text-align: right;
     direction: rtl;
   }
   
-  body.ltr input, body.ltr textarea {
+  body.ltr input, body.ltr textarea, body.ltr select {
     text-align: left;
     direction: ltr;
+  }
+  
+  /* RTL-specific margin and padding utilities */
+  body.rtl .ms-auto {
+    margin-inline-start: auto;
+  }
+  
+  body.rtl .me-auto {
+    margin-inline-end: auto;
+  }
+  
+  body.rtl .ps-0 { padding-inline-start: 0; }
+  body.rtl .ps-1 { padding-inline-start: 0.25rem; }
+  body.rtl .ps-2 { padding-inline-start: 0.5rem; }
+  body.rtl .ps-3 { padding-inline-start: 0.75rem; }
+  body.rtl .ps-4 { padding-inline-start: 1rem; }
+  body.rtl .ps-6 { padding-inline-start: 1.5rem; }
+  body.rtl .ps-8 { padding-inline-start: 2rem; }
+  
+  body.rtl .pe-0 { padding-inline-end: 0; }
+  body.rtl .pe-1 { padding-inline-end: 0.25rem; }
+  body.rtl .pe-2 { padding-inline-end: 0.5rem; }
+  body.rtl .pe-3 { padding-inline-end: 0.75rem; }
+  body.rtl .pe-4 { padding-inline-end: 1rem; }
+  body.rtl .pe-6 { padding-inline-end: 1.5rem; }
+  body.rtl .pe-8 { padding-inline-end: 2rem; }
+  
+  body.rtl .ms-0 { margin-inline-start: 0; }
+  body.rtl .ms-1 { margin-inline-start: 0.25rem; }
+  body.rtl .ms-2 { margin-inline-start: 0.5rem; }
+  body.rtl .ms-3 { margin-inline-start: 0.75rem; }
+  body.rtl .ms-4 { margin-inline-start: 1rem; }
+  body.rtl .ms-6 { margin-inline-start: 1.5rem; }
+  body.rtl .ms-8 { margin-inline-start: 2rem; }
+  
+  body.rtl .me-0 { margin-inline-end: 0; }
+  body.rtl .me-1 { margin-inline-end: 0.25rem; }
+  body.rtl .me-2 { margin-inline-end: 0.5rem; }
+  body.rtl .me-3 { margin-inline-end: 0.75rem; }
+  body.rtl .me-4 { margin-inline-end: 1rem; }
+  body.rtl .me-6 { margin-inline-end: 1.5rem; }
+  body.rtl .me-8 { margin-inline-end: 2rem; }
+  
+  /* Icon positioning for RTL */
+  body.rtl .sidebar-menu-button svg {
+    margin-inline-end: 0.5rem;
+    margin-inline-start: 0;
+  }
+  
+  body.ltr .sidebar-menu-button svg {
+    margin-inline-start: 0;
+    margin-inline-end: 0.5rem;
+  }
+  
+  /* Dropdown and popover positioning */
+  body.rtl .dropdown-content {
+    transform-origin: top right;
+  }
+  
+  body.ltr .dropdown-content {
+    transform-origin: top left;
+  }
+  
+  /* Table alignment for RTL */
+  body.rtl table {
+    direction: rtl;
+  }
+  
+  body.rtl th, body.rtl td {
+    text-align: start;
+  }
+  
+  /* Enhanced RTL-specific utilities */
+  .rtl\\:rotate-180 {
+    transform: rotate(180deg);
+  }
+  
+  /* RTL-aware Tailwind utilities */
+  .rtl\\:space-x-reverse > * + * {
+    margin-inline-start: 0;
+    margin-inline-end: var(--tw-space-x);
+  }
+  
+  /* RTL margin auto utilities */
+  body.rtl .ms-auto {
+    margin-inline-start: auto;
+  }
+  
+  body.rtl .me-auto {
+    margin-inline-end: auto;
+  }
+  
+  body.ltr .ms-auto {  
+    margin-inline-start: auto;
+  }
+  
+  body.ltr .me-auto {
+    margin-inline-end: auto;
+  }
+  
+  /* Enhanced grid and flex layout direction handling */
+  body.rtl .grid {
+    direction: rtl;
+  }
+  
+  body.ltr .grid {
+    direction: ltr;
+  }
+  
+  body.rtl .flex {
+    direction: rtl;
+  }
+  
+  body.ltr .flex {
+    direction: ltr;
+  }
+  
+  /* Flex justify utilities for RTL */
+  body.rtl .justify-between {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+  }
+  
+  body.rtl .justify-start {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  body.rtl .justify-end {
+    display: flex;
+    justify-content: flex-start;
   }
   
   /* Keep support for existing [dir] attribute for backward compatibility */
