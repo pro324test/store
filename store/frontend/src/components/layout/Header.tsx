@@ -11,12 +11,17 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  Container,
+  Avatar,
+  Divider,
 } from '@mui/material';
 import {
   ShoppingCart,
   Person,
   Search,
   Language,
+  Notifications,
+  FavoriteBorder,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
@@ -53,109 +58,213 @@ export default function Header() {
   };
 
   return (
-    <AppBar position="sticky" elevation={1}>
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
-        {/* Logo */}
-        <Typography
-          variant="h6"
-          component={Link}
-          href="/"
-          sx={{
-            textDecoration: 'none',
-            color: 'inherit',
-            fontWeight: 'bold',
+    <AppBar position="sticky" elevation={0}>
+      <Container maxWidth="xl">
+        <Toolbar 
+          sx={{ 
+            justifyContent: 'space-between',
+            py: 1,
+            minHeight: '70px !important',
           }}
         >
-          {locale === 'ar' ? 'متجر متعدد البائعين' : 'Multivendor Store'}
-        </Typography>
-
-        {/* Search Bar */}
-        <Box sx={{ flexGrow: 1, maxWidth: 600, mx: 2 }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder={t('common.search')}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'white',
-              },
-            }}
-          />
-        </Box>
-
-        {/* Navigation Items */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {/* Language Switcher */}
-          <IconButton
-            color="inherit"
-            onClick={handleLanguageMenuOpen}
-            aria-label="language"
-          >
-            <Language />
-          </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleLanguageMenuClose}
-          >
-            <MenuItem
-              onClick={() => handleLanguageChange('ar')}
-              selected={locale === 'ar'}
+          {/* Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography
+              variant="h5"
+              component={Link}
+              href="/"
+              sx={{
+                textDecoration: 'none',
+                color: 'inherit',
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.5px',
+              }}
             >
-              العربية
-            </MenuItem>
-            <MenuItem
-              onClick={() => handleLanguageChange('en')}
-              selected={locale === 'en'}
+              {locale === 'ar' ? 'متجر متعدد البائعين' : 'Multivendor Store'}
+            </Typography>
+          </Box>
+
+          {/* Search Bar */}
+          <Box sx={{ flexGrow: 1, maxWidth: 600, mx: 4 }}>
+            <TextField
+              fullWidth
+              size="medium"
+              placeholder={t('common.search')}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: 'text.secondary' }} />
+                  </InputAdornment>
+                ),
+                sx: {
+                  backgroundColor: 'grey.50',
+                  borderRadius: 3,
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    border: 'none',
+                  },
+                  '&:hover': {
+                    backgroundColor: 'grey.100',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: 'white',
+                    boxShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                  },
+                },
+              }}
+            />
+          </Box>
+
+          {/* Navigation Items */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {/* Wishlist */}
+            <IconButton
+              color="inherit"
+              component={Link}
+              href="/wishlist"
+              sx={{
+                borderRadius: 2,
+                p: 1.5,
+                '&:hover': {
+                  backgroundColor: 'grey.100',
+                },
+              }}
             >
-              English
-            </MenuItem>
-          </Menu>
+              <Badge badgeContent={2} color="secondary">
+                <FavoriteBorder />
+              </Badge>
+            </IconButton>
 
-          {/* Cart */}
-          <IconButton
-            color="inherit"
-            component={Link}
-            href="/cart"
-            aria-label="cart"
-          >
-            <Badge badgeContent={3} color="secondary">
-              <ShoppingCart />
-            </Badge>
-          </IconButton>
+            {/* Notifications */}
+            <IconButton
+              color="inherit"
+              sx={{
+                borderRadius: 2,
+                p: 1.5,
+                '&:hover': {
+                  backgroundColor: 'grey.100',
+                },
+              }}
+            >
+              <Badge badgeContent={5} color="error">
+                <Notifications />
+              </Badge>
+            </IconButton>
 
-          {/* User Menu */}
-          <IconButton
-            color="inherit"
-            onClick={handleUserMenuOpen}
-            aria-label="user menu"
-          >
-            <Person />
-          </IconButton>
-          <Menu
-            anchorEl={userMenuAnchor}
-            open={Boolean(userMenuAnchor)}
-            onClose={handleUserMenuClose}
-          >
-            <MenuItem component={Link} href="/profile">
-              {t('navigation.profile')}
-            </MenuItem>
-            <MenuItem component={Link} href="/login">
-              {t('navigation.login')}
-            </MenuItem>
-            <MenuItem component={Link} href="/register">
-              {t('navigation.register')}
-            </MenuItem>
-          </Menu>
-        </Box>
-      </Toolbar>
+            {/* Language Switcher */}
+            <IconButton
+              color="inherit"
+              onClick={handleLanguageMenuOpen}
+              sx={{
+                borderRadius: 2,
+                p: 1.5,
+                '&:hover': {
+                  backgroundColor: 'grey.100',
+                },
+              }}
+            >
+              <Language />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleLanguageMenuClose}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                },
+              }}
+            >
+              <MenuItem
+                onClick={() => handleLanguageChange('ar')}
+                selected={locale === 'ar'}
+                sx={{ px: 3, py: 1.5 }}
+              >
+                العربية
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleLanguageChange('en')}
+                selected={locale === 'en'}
+                sx={{ px: 3, py: 1.5 }}
+              >
+                English
+              </MenuItem>
+            </Menu>
+
+            {/* Cart */}
+            <IconButton
+              color="inherit"
+              component={Link}
+              href="/cart"
+              sx={{
+                borderRadius: 2,
+                p: 1.5,
+                '&:hover': {
+                  backgroundColor: 'grey.100',
+                },
+              }}
+            >
+              <Badge badgeContent={3} color="secondary">
+                <ShoppingCart />
+              </Badge>
+            </IconButton>
+
+            {/* User Menu */}
+            <IconButton
+              onClick={handleUserMenuOpen}
+              sx={{
+                borderRadius: 2,
+                p: 0.5,
+                ml: 1,
+                '&:hover': {
+                  backgroundColor: 'grey.100',
+                },
+              }}
+            >
+              <Avatar 
+                sx={{ 
+                  width: 36, 
+                  height: 36, 
+                  bgcolor: 'primary.main',
+                  fontSize: '0.9rem',
+                }}
+              >
+                U
+              </Avatar>
+            </IconButton>
+            <Menu
+              anchorEl={userMenuAnchor}
+              open={Boolean(userMenuAnchor)}
+              onClose={handleUserMenuClose}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  minWidth: 200,
+                },
+              }}
+            >
+              <MenuItem component={Link} href="/profile" sx={{ px: 3, py: 1.5 }}>
+                <Person sx={{ mr: 2, fontSize: 20 }} />
+                {t('navigation.profile')}
+              </MenuItem>
+              <Divider />
+              <MenuItem component={Link} href="/login" sx={{ px: 3, py: 1.5 }}>
+                {t('navigation.login')}
+              </MenuItem>
+              <MenuItem component={Link} href="/register" sx={{ px: 3, py: 1.5 }}>
+                {t('navigation.register')}
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Toolbar>
+      </Container>
     </AppBar>
   );
 }

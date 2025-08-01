@@ -6,7 +6,6 @@ import {
   Typography,
   Link as MuiLink,
   IconButton,
-  Paper,
 } from '@mui/material';
 import {
   Facebook,
@@ -22,108 +21,188 @@ export default function Footer() {
   const locale = useLocale();
 
   return (
-    <Paper
+    <Box
       component="footer"
-      elevation={3}
       sx={{
         mt: 8,
-        py: 6,
-        backgroundColor: 'grey.100',
+        py: 8,
+        backgroundColor: 'grey.900',
+        color: 'white',
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, 
-          gap: 4 
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, 
+          gap: 6,
+          mb: 6,
         }}>
           {/* Company Info */}
-          <Box>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+          <Box sx={{ gridColumn: { xs: '1', md: '1 / 3' } }}>
+            <Typography 
+              variant="h5" 
+              gutterBottom 
+              fontWeight="bold"
+              sx={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 3,
+              }}
+            >
               {locale === 'ar' ? 'متجر متعدد البائعين' : 'Multivendor Store'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
+            <Typography 
+              variant="body1" 
+              color="grey.300" 
+              paragraph
+              sx={{ 
+                lineHeight: 1.7,
+                maxWidth: 400,
+              }}
+            >
               {locale === 'ar' 
-                ? 'منصة التجارة الإلكترونية الرائدة التي تجمع أفضل البائعين في مكان واحد'
-                : 'Leading e-commerce platform bringing together the best vendors in one place'
+                ? 'منصة التجارة الإلكترونية الرائدة التي تجمع أفضل البائعين في مكان واحد. نقدم تجربة تسوق استثنائية بأعلى معايير الجودة والأمان.'
+                : 'Leading e-commerce platform bringing together the best vendors in one place. We provide an exceptional shopping experience with the highest standards of quality and security.'
               }
             </Typography>
             
             {/* Social Media */}
-            <Box sx={{ mt: 2 }}>
-              <IconButton aria-label="Facebook" color="primary">
-                <Facebook />
-              </IconButton>
-              <IconButton aria-label="Twitter" color="primary">
-                <Twitter />
-              </IconButton>
-              <IconButton aria-label="Instagram" color="primary">
-                <Instagram />
-              </IconButton>
-              <IconButton aria-label="LinkedIn" color="primary">
-                <LinkedIn />
-              </IconButton>
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h6" gutterBottom fontWeight="600" sx={{ mb: 2 }}>
+                {locale === 'ar' ? 'تابعنا' : 'Follow Us'}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {[Facebook, Twitter, Instagram, LinkedIn].map((Icon, index) => (
+                  <IconButton 
+                    key={index}
+                    sx={{
+                      backgroundColor: 'grey.800',
+                      color: 'white',
+                      width: 48,
+                      height: 48,
+                      '&:hover': {
+                        backgroundColor: 'primary.main',
+                        transform: 'translateY(-2px)',
+                      },
+                      transition: 'all 0.3s ease-in-out',
+                    }}
+                  >
+                    <Icon />
+                  </IconButton>
+                ))}
+              </Box>
             </Box>
           </Box>
 
           {/* Quick Links */}
           <Box>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+            <Typography variant="h6" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
               {locale === 'ar' ? 'روابط سريعة' : 'Quick Links'}
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <MuiLink component={Link} href="/products" underline="hover">
-                {t('navigation.products')}
-              </MuiLink>
-              <MuiLink component={Link} href="/vendors" underline="hover">
-                {t('navigation.vendors')}
-              </MuiLink>
-              <MuiLink component={Link} href="/categories" underline="hover">
-                {t('navigation.categories')}
-              </MuiLink>
-              <MuiLink component={Link} href="/about" underline="hover">
-                {locale === 'ar' ? 'عن الموقع' : 'About Us'}
-              </MuiLink>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                { href: '/products', label: t('navigation.products') },
+                { href: '/vendors', label: t('navigation.vendors') },
+                { href: '/categories', label: t('navigation.categories') },
+                { href: '/about', label: locale === 'ar' ? 'عن الموقع' : 'About Us' },
+                { href: '/offers', label: locale === 'ar' ? 'العروض' : 'Offers' },
+              ].map((link, index) => (
+                <MuiLink 
+                  key={index}
+                  component={Link} 
+                  href={link.href}
+                  color="grey.300"
+                  underline="none"
+                  sx={{
+                    fontSize: '0.95rem',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      color: 'primary.light',
+                      transform: 'translateX(4px)',
+                    },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
             </Box>
           </Box>
 
           {/* Support */}
           <Box>
-            <Typography variant="h6" gutterBottom fontWeight="bold">
+            <Typography variant="h6" gutterBottom fontWeight="600" sx={{ mb: 3 }}>
               {locale === 'ar' ? 'الدعم' : 'Support'}
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <MuiLink href="#" underline="hover">
-                {locale === 'ar' ? 'اتصل بنا' : 'Contact Us'}
-              </MuiLink>
-              <MuiLink href="#" underline="hover">
-                {locale === 'ar' ? 'الأسئلة الشائعة' : 'FAQ'}
-              </MuiLink>
-              <MuiLink href="#" underline="hover">
-                {locale === 'ar' ? 'سياسة الإرجاع' : 'Return Policy'}
-              </MuiLink>
-              <MuiLink href="#" underline="hover">
-                {locale === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions'}
-              </MuiLink>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {[
+                { href: '#', label: locale === 'ar' ? 'اتصل بنا' : 'Contact Us' },
+                { href: '#', label: locale === 'ar' ? 'الأسئلة الشائعة' : 'FAQ' },
+                { href: '#', label: locale === 'ar' ? 'سياسة الإرجاع' : 'Return Policy' },
+                { href: '#', label: locale === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions' },
+                { href: '#', label: locale === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy' },
+              ].map((link, index) => (
+                <MuiLink 
+                  key={index}
+                  href={link.href}
+                  color="grey.300"
+                  underline="none"
+                  sx={{
+                    fontSize: '0.95rem',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      color: 'primary.light',
+                      transform: 'translateX(4px)',
+                    },
+                  }}
+                >
+                  {link.label}
+                </MuiLink>
+              ))}
             </Box>
           </Box>
+        </Box>
+
+        {/* Newsletter Signup */}
+        <Box
+          sx={{
+            py: 4,
+            px: 6,
+            borderRadius: 3,
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            textAlign: 'center',
+            mb: 6,
+          }}
+        >
+          <Typography variant="h5" gutterBottom fontWeight="bold">
+            {locale === 'ar' ? 'اشترك في النشرة الإخبارية' : 'Subscribe to Newsletter'}
+          </Typography>
+          <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 500, mx: 'auto' }}>
+            {locale === 'ar' 
+              ? 'احصل على آخر العروض والمنتجات الجديدة' 
+              : 'Get the latest offers and new products'
+            }
+          </Typography>
         </Box>
 
         {/* Copyright */}
         <Box
           sx={{
-            mt: 4,
-            pt: 3,
+            pt: 4,
             borderTop: 1,
-            borderColor: 'divider',
+            borderColor: 'grey.800',
             textAlign: 'center',
           }}
         >
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="grey.400" sx={{ fontSize: '0.9rem' }}>
             © 2024 {locale === 'ar' ? 'متجر متعدد البائعين. جميع الحقوق محفوظة.' : 'Multivendor Store. All rights reserved.'}
+          </Typography>
+          <Typography variant="body2" color="grey.500" sx={{ mt: 1, fontSize: '0.8rem' }}>
+            {locale === 'ar' ? 'تم التطوير بـ ❤️ من أجل تجربة تسوق أفضل' : 'Made with ❤️ for a better shopping experience'}
           </Typography>
         </Box>
       </Container>
-    </Paper>
+    </Box>
   );
 }
