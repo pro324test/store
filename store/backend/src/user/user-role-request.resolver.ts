@@ -1,10 +1,18 @@
-import { Resolver, Query, Mutation, Args, Int, InputType, Field } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  InputType,
+  Field,
+} from '@nestjs/graphql';
 import { UserRoleRequestService } from './user-role-request.service';
 import { UserRoleHistoryService } from './user-role-history.service';
-import { 
-  UserRoleRequest, 
-  UserRole, 
-  UserRoleRequestStatus 
+import {
+  UserRoleRequest,
+  UserRole,
+  UserRoleRequestStatus,
 } from './user-role-request.model';
 import { GraphQLJSON } from 'graphql-type-json';
 
@@ -40,8 +48,10 @@ export class UserRoleRequestResolver {
   @Query(() => [UserRoleRequest], { name: 'userRoleRequests' })
   findAll(
     @Args('userId', { type: () => Int, nullable: true }) userId?: number,
-    @Args('status', { type: () => UserRoleRequestStatus, nullable: true }) status?: UserRoleRequestStatus,
-    @Args('requestedRole', { type: () => UserRole, nullable: true }) requestedRole?: UserRole,
+    @Args('status', { type: () => UserRoleRequestStatus, nullable: true })
+    status?: UserRoleRequestStatus,
+    @Args('requestedRole', { type: () => UserRole, nullable: true })
+    requestedRole?: UserRole,
   ) {
     return this.userRoleRequestService.findAll({
       userId,
@@ -83,8 +93,12 @@ export class UserRoleRequestResolver {
     @Args('processedById', { type: () => Int }) processedById: number,
     @Args('adminNotes', { nullable: true }) adminNotes?: string,
   ) {
-    const result = await this.userRoleRequestService.approve(id, processedById, adminNotes);
-    
+    const result = await this.userRoleRequestService.approve(
+      id,
+      processedById,
+      adminNotes,
+    );
+
     // Log the role assignment in history
     await this.userRoleHistoryService.logRoleAssignment(
       result.userId,
@@ -103,7 +117,12 @@ export class UserRoleRequestResolver {
     @Args('rejectionReason') rejectionReason: string,
     @Args('adminNotes', { nullable: true }) adminNotes?: string,
   ) {
-    return this.userRoleRequestService.reject(id, processedById, rejectionReason, adminNotes);
+    return this.userRoleRequestService.reject(
+      id,
+      processedById,
+      rejectionReason,
+      adminNotes,
+    );
   }
 
   @Mutation(() => Boolean)

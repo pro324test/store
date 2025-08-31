@@ -361,14 +361,11 @@ export class ProductService {
   async getProductImages(productId: number) {
     return this.prisma.productImage.findMany({
       where: { productId },
-      include: { 
+      include: {
         fileUpload: true,
-        product: true 
+        product: true,
       },
-      orderBy: [
-        { isDefault: 'desc' },
-        { sortOrder: 'asc' }
-      ],
+      orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
     });
   }
 
@@ -394,9 +391,9 @@ export class ProductService {
         sortOrder: data.sortOrder ?? 0,
         isDefault: data.isDefault ?? false,
       },
-      include: { 
+      include: {
         fileUpload: true,
-        product: true 
+        product: true,
       },
     });
   }
@@ -430,9 +427,9 @@ export class ProductService {
     return this.prisma.productImage.update({
       where: { id },
       data,
-      include: { 
+      include: {
         fileUpload: true,
-        product: true 
+        product: true,
       },
     });
   }
@@ -463,9 +460,9 @@ export class ProductService {
     return this.prisma.productImage.update({
       where: { id: imageId },
       data: { isDefault: true },
-      include: { 
+      include: {
         fileUpload: true,
-        product: true 
+        product: true,
       },
     });
   }
@@ -475,13 +472,13 @@ export class ProductService {
   async getProductAttributes(productId: number) {
     return this.prisma.productAttribute.findMany({
       where: { productId },
-      include: { 
+      include: {
         product: true,
         variationAttributes: {
           include: {
-            variation: true
-          }
-        }
+            variation: true,
+          },
+        },
       },
       orderBy: { sortOrder: 'asc' },
     });
@@ -502,16 +499,16 @@ export class ProductService {
         ...data,
         isRequired: data.isRequired ?? false,
         isVariant: data.isVariant ?? true,
-        attributeType: data.attributeType as any ?? 'TEXT',
+        attributeType: (data.attributeType as any) ?? 'TEXT',
         sortOrder: data.sortOrder ?? 0,
       },
-      include: { 
+      include: {
         product: true,
         variationAttributes: {
           include: {
-            variation: true
-          }
-        }
+            variation: true,
+          },
+        },
       },
     });
   }
@@ -534,13 +531,13 @@ export class ProductService {
         ...data,
         attributeType: data.attributeType as any,
       },
-      include: { 
+      include: {
         product: true,
         variationAttributes: {
           include: {
-            variation: true
-          }
-        }
+            variation: true,
+          },
+        },
       },
     });
   }
@@ -556,14 +553,14 @@ export class ProductService {
   async getProductVariations(productId: number) {
     return this.prisma.productVariation.findMany({
       where: { productId },
-      include: { 
+      include: {
         product: true,
         attributes: {
           include: {
-            attribute: true
+            attribute: true,
           },
-          orderBy: { sortOrder: 'asc' }
-        }
+          orderBy: { sortOrder: 'asc' },
+        },
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -612,14 +609,14 @@ export class ProductService {
       // Return variation with attributes
       return tx.productVariation.findUnique({
         where: { id: variation.id },
-        include: { 
+        include: {
           product: true,
           attributes: {
             include: {
-              attribute: true
+              attribute: true,
             },
-            orderBy: { sortOrder: 'asc' }
-          }
+            orderBy: { sortOrder: 'asc' },
+          },
         },
       });
     });
@@ -666,7 +663,7 @@ export class ProductService {
         // Create new attributes
         await tx.productVariationAttribute.createMany({
           data: data.attributes
-            .filter(attr => attr.attributeId && attr.value)
+            .filter((attr) => attr.attributeId && attr.value)
             .map((attr) => ({
               variationId: id,
               attributeId: attr.attributeId!,
@@ -681,14 +678,14 @@ export class ProductService {
       // Return variation with attributes
       return tx.productVariation.findUnique({
         where: { id },
-        include: { 
+        include: {
           product: true,
           attributes: {
             include: {
-              attribute: true
+              attribute: true,
             },
-            orderBy: { sortOrder: 'asc' }
-          }
+            orderBy: { sortOrder: 'asc' },
+          },
         },
       });
     });
@@ -704,14 +701,14 @@ export class ProductService {
     return this.prisma.productVariation.update({
       where: { id: variationId },
       data: { stockQuantity },
-      include: { 
+      include: {
         product: true,
         attributes: {
           include: {
-            attribute: true
+            attribute: true,
           },
-          orderBy: { sortOrder: 'asc' }
-        }
+          orderBy: { sortOrder: 'asc' },
+        },
       },
     });
   }
@@ -726,29 +723,26 @@ export class ProductService {
         brand: true,
         images: {
           include: { fileUpload: true },
-          orderBy: [
-            { isDefault: 'desc' },
-            { sortOrder: 'asc' }
-          ]
+          orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
         },
         attributes: {
           include: {
             variationAttributes: {
-              include: { variation: true }
-            }
+              include: { variation: true },
+            },
           },
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sortOrder: 'asc' },
         },
         variations: {
           include: {
             attributes: {
               include: { attribute: true },
-              orderBy: { sortOrder: 'asc' }
-            }
+              orderBy: { sortOrder: 'asc' },
+            },
           },
           where: { isActive: true },
-          orderBy: { createdAt: 'asc' }
-        }
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -771,26 +765,23 @@ export class ProductService {
         brand: true,
         images: {
           include: { fileUpload: true },
-          orderBy: [
-            { isDefault: 'desc' },
-            { sortOrder: 'asc' }
-          ],
-          take: 1 // Only get the main image for listing
+          orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
+          take: 1, // Only get the main image for listing
         },
         attributes: {
-          orderBy: { sortOrder: 'asc' }
+          orderBy: { sortOrder: 'asc' },
         },
         variations: {
           where: { isActive: true },
           include: {
             attributes: {
               include: { attribute: true },
-              orderBy: { sortOrder: 'asc' }
-            }
+              orderBy: { sortOrder: 'asc' },
+            },
           },
           orderBy: { price: 'asc' },
-          take: 1 // Only get the first variation for listing
-        }
+          take: 1, // Only get the first variation for listing
+        },
       },
       orderBy: { createdAt: 'desc' },
       take: limit,

@@ -555,20 +555,20 @@ export class AdminService {
       this.prisma.user.count({
         where: { isActive: true },
       }),
-      
-      // Total products count  
+
+      // Total products count
       this.prisma.product.count({
         where: { isActive: true, isPublished: true },
       }),
-      
+
       // Total orders count
       this.prisma.order.count(),
-      
+
       // Total vendors count
       this.prisma.vendorProfile.count({
         where: { isActive: true },
       }),
-      
+
       // Active users in last 30 days
       this.prisma.user.count({
         where: {
@@ -578,12 +578,12 @@ export class AdminService {
           },
         },
       }),
-      
+
       // Pending orders count
       this.prisma.order.count({
         where: { status: 'PENDING' },
       }),
-      
+
       // Recent orders for activity feed
       this.prisma.order.findMany({
         take: 5,
@@ -603,77 +603,78 @@ export class AdminService {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
 
-    const [
-      usersLastMonth,
-      productsLastMonth,
-      ordersLastMonth,
-    ] = await Promise.all([
-      this.prisma.user.count({
-        where: {
-          isActive: true,
-          createdAt: {
-            gte: sixtyDaysAgo,
-            lt: thirtyDaysAgo,
+    const [usersLastMonth, productsLastMonth, ordersLastMonth] =
+      await Promise.all([
+        this.prisma.user.count({
+          where: {
+            isActive: true,
+            createdAt: {
+              gte: sixtyDaysAgo,
+              lt: thirtyDaysAgo,
+            },
           },
-        },
-      }),
-      this.prisma.product.count({
-        where: {
-          isActive: true,
-          isPublished: true,
-          createdAt: {
-            gte: sixtyDaysAgo,
-            lt: thirtyDaysAgo,
+        }),
+        this.prisma.product.count({
+          where: {
+            isActive: true,
+            isPublished: true,
+            createdAt: {
+              gte: sixtyDaysAgo,
+              lt: thirtyDaysAgo,
+            },
           },
-        },
-      }),
-      this.prisma.order.count({
-        where: {
-          createdAt: {
-            gte: sixtyDaysAgo,
-            lt: thirtyDaysAgo,
+        }),
+        this.prisma.order.count({
+          where: {
+            createdAt: {
+              gte: sixtyDaysAgo,
+              lt: thirtyDaysAgo,
+            },
           },
-        },
-      }),
-    ]);
+        }),
+      ]);
 
-    const [
-      usersThisMonth,
-      productsThisMonth,
-      ordersThisMonth,
-    ] = await Promise.all([
-      this.prisma.user.count({
-        where: {
-          isActive: true,
-          createdAt: { gte: thirtyDaysAgo },
-        },
-      }),
-      this.prisma.product.count({
-        where: {
-          isActive: true,
-          isPublished: true,
-          createdAt: { gte: thirtyDaysAgo },
-        },
-      }),
-      this.prisma.order.count({
-        where: {
-          createdAt: { gte: thirtyDaysAgo },
-        },
-      }),
-    ]);
+    const [usersThisMonth, productsThisMonth, ordersThisMonth] =
+      await Promise.all([
+        this.prisma.user.count({
+          where: {
+            isActive: true,
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        this.prisma.product.count({
+          where: {
+            isActive: true,
+            isPublished: true,
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+        this.prisma.order.count({
+          where: {
+            createdAt: { gte: thirtyDaysAgo },
+          },
+        }),
+      ]);
 
     // Calculate growth percentages
-    const userGrowth = usersLastMonth > 0 
-      ? Math.round(((usersThisMonth - usersLastMonth) / usersLastMonth) * 100) 
-      : 0;
-    
-    const productGrowth = productsLastMonth > 0 
-      ? Math.round(((productsThisMonth - productsLastMonth) / productsLastMonth) * 100) 
-      : 0;
-    
-    const orderGrowth = ordersLastMonth > 0 
-      ? Math.round(((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100) 
-      : 0;
+    const userGrowth =
+      usersLastMonth > 0
+        ? Math.round(((usersThisMonth - usersLastMonth) / usersLastMonth) * 100)
+        : 0;
+
+    const productGrowth =
+      productsLastMonth > 0
+        ? Math.round(
+            ((productsThisMonth - productsLastMonth) / productsLastMonth) * 100,
+          )
+        : 0;
+
+    const orderGrowth =
+      ordersLastMonth > 0
+        ? Math.round(
+            ((ordersThisMonth - ordersLastMonth) / ordersLastMonth) * 100,
+          )
+        : 0;
 
     // System health check (simplified)
     const systemHealth = await this.checkSystemHealth();
@@ -689,7 +690,7 @@ export class AdminService {
       productGrowth,
       orderGrowth,
       systemHealth,
-      recentActivity: recentOrders.map(order => ({
+      recentActivity: recentOrders.map((order) => ({
         id: order.id,
         type: 'ORDER',
         description: `New order #${order.orderNumber} from ${order.customer.user.fullName}`,
@@ -705,7 +706,7 @@ export class AdminService {
     try {
       // Check database connectivity
       await this.prisma.$queryRaw`SELECT 1`;
-      
+
       // Check for any critical system issues
       const criticalIssues = await Promise.all([
         // Check for orders stuck in processing for too long
@@ -717,7 +718,7 @@ export class AdminService {
             },
           },
         }),
-        
+
         // Check for failed deliveries
         this.prisma.delivery.count({
           where: {
@@ -730,7 +731,7 @@ export class AdminService {
       ]);
 
       const [stuckOrders, failedDeliveries] = criticalIssues;
-      
+
       if (stuckOrders > 10 || failedDeliveries > 5) {
         return {
           status: 'WARNING',

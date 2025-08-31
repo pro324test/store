@@ -61,7 +61,9 @@ describe('UserRoleRequestService', () => {
         },
       ];
 
-      mockPrismaService.userRoleRequest.findMany.mockResolvedValue(mockRequests);
+      mockPrismaService.userRoleRequest.findMany.mockResolvedValue(
+        mockRequests,
+      );
 
       const result = await service.findAll();
 
@@ -113,32 +115,36 @@ describe('UserRoleRequestService', () => {
         status: UserRoleRequestStatus.PENDING,
       };
 
-      mockPrismaService.userRoleRequest.findUnique.mockResolvedValue(mockRequest);
+      mockPrismaService.userRoleRequest.findUnique.mockResolvedValue(
+        mockRequest,
+      );
 
       const result = await service.findOne(1);
 
       expect(result).toEqual(mockRequest);
-      expect(mockPrismaService.userRoleRequest.findUnique).toHaveBeenCalledWith({
-        where: { id: 1 },
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              phoneNumber: true,
-              email: true,
+      expect(mockPrismaService.userRoleRequest.findUnique).toHaveBeenCalledWith(
+        {
+          where: { id: 1 },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneNumber: true,
+                email: true,
+              },
             },
-          },
-          processedBy: {
-            select: {
-              id: true,
-              fullName: true,
-              phoneNumber: true,
-              email: true,
+            processedBy: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneNumber: true,
+                email: true,
+              },
             },
           },
         },
-      });
+      );
     });
 
     it('should throw NotFoundException when role request not found', async () => {
@@ -167,7 +173,9 @@ describe('UserRoleRequestService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.userRoleAssignment.findUnique.mockResolvedValue(null);
       mockPrismaService.userRoleRequest.findFirst.mockResolvedValue(null);
-      mockPrismaService.userRoleRequest.create.mockResolvedValue(mockCreatedRequest);
+      mockPrismaService.userRoleRequest.create.mockResolvedValue(
+        mockCreatedRequest,
+      );
 
       const result = await service.create(createData);
 
@@ -195,7 +203,9 @@ describe('UserRoleRequestService', () => {
     it('should throw NotFoundException when user not found', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.create(createData)).rejects.toThrow(NotFoundException);
+      await expect(service.create(createData)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when user already has the role', async () => {
@@ -203,20 +213,31 @@ describe('UserRoleRequestService', () => {
       const mockExistingRole = { userId: 1, role: UserRole.VENDOR };
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.userRoleAssignment.findUnique.mockResolvedValue(mockExistingRole);
+      mockPrismaService.userRoleAssignment.findUnique.mockResolvedValue(
+        mockExistingRole,
+      );
 
-      await expect(service.create(createData)).rejects.toThrow(BadRequestException);
+      await expect(service.create(createData)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when pending request already exists', async () => {
       const mockUser = { id: 1, fullName: 'Test User' };
-      const mockPendingRequest = { id: 1, status: UserRoleRequestStatus.PENDING };
+      const mockPendingRequest = {
+        id: 1,
+        status: UserRoleRequestStatus.PENDING,
+      };
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.userRoleAssignment.findUnique.mockResolvedValue(null);
-      mockPrismaService.userRoleRequest.findFirst.mockResolvedValue(mockPendingRequest);
+      mockPrismaService.userRoleRequest.findFirst.mockResolvedValue(
+        mockPendingRequest,
+      );
 
-      await expect(service.create(createData)).rejects.toThrow(BadRequestException);
+      await expect(service.create(createData)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -234,7 +255,7 @@ describe('UserRoleRequestService', () => {
 
       // Mock the service method call
       jest.spyOn(service, 'findOne').mockResolvedValue(mockRoleRequest as any);
-      
+
       mockPrismaService.userRoleAssignment.findUnique.mockResolvedValue(null);
       mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return callback({
@@ -269,7 +290,9 @@ describe('UserRoleRequestService', () => {
         status: UserRoleRequestStatus.APPROVED,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue(nonPendingRequest as any);
+      jest
+        .spyOn(service, 'findOne')
+        .mockResolvedValue(nonPendingRequest as any);
 
       await expect(service.approve(1, 2)).rejects.toThrow(BadRequestException);
     });
@@ -288,7 +311,7 @@ describe('UserRoleRequestService', () => {
       const rejectionReason = 'Insufficient documentation';
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockRoleRequest as any);
-      
+
       const mockRejectedRequest = {
         ...mockRoleRequest,
         status: UserRoleRequestStatus.REJECTED,
@@ -296,7 +319,9 @@ describe('UserRoleRequestService', () => {
         rejectionReason,
       };
 
-      mockPrismaService.userRoleRequest.update.mockResolvedValue(mockRejectedRequest);
+      mockPrismaService.userRoleRequest.update.mockResolvedValue(
+        mockRejectedRequest,
+      );
 
       const result = await service.reject(1, processedById, rejectionReason);
 

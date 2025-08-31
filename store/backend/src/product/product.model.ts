@@ -1,10 +1,16 @@
-import { ObjectType, Field, Int, Float, registerEnumType } from '@nestjs/graphql';
+import {
+  ObjectType,
+  Field,
+  Int,
+  Float,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { GraphQLJSON } from 'graphql-type-json';
 
 // Register AttributeType enum for GraphQL
 export enum AttributeType {
   TEXT = 'TEXT',
-  COLOR = 'COLOR', 
+  COLOR = 'COLOR',
   SIZE = 'SIZE',
   MATERIAL = 'MATERIAL',
   NUMBER = 'NUMBER',

@@ -135,20 +135,19 @@ describe('ProductService - Advanced Features', () => {
 
   describe('Product Images', () => {
     it('should get product images', async () => {
-      mockPrismaService.productImage.findMany.mockResolvedValue([mockProductImage]);
+      mockPrismaService.productImage.findMany.mockResolvedValue([
+        mockProductImage,
+      ]);
 
       const result = await service.getProductImages(1);
 
       expect(mockPrismaService.productImage.findMany).toHaveBeenCalledWith({
         where: { productId: 1 },
-        include: { 
+        include: {
           fileUpload: true,
-          product: true 
+          product: true,
         },
-        orderBy: [
-          { isDefault: 'desc' },
-          { sortOrder: 'asc' }
-        ],
+        orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
       });
       expect(result).toEqual([mockProductImage]);
     });
@@ -176,9 +175,9 @@ describe('ProductService - Advanced Features', () => {
           ...createData,
           isDefault: true,
         },
-        include: { 
+        include: {
           fileUpload: true,
-          product: true 
+          product: true,
         },
       });
       expect(result).toEqual(mockProductImage);
@@ -190,7 +189,9 @@ describe('ProductService - Advanced Features', () => {
         isDefault: false,
       };
 
-      mockPrismaService.productImage.findUnique.mockResolvedValue({ productId: 1 });
+      mockPrismaService.productImage.findUnique.mockResolvedValue({
+        productId: 1,
+      });
       mockPrismaService.productImage.update.mockResolvedValue(mockProductImage);
 
       const result = await service.updateProductImage(1, updateData);
@@ -202,9 +203,9 @@ describe('ProductService - Advanced Features', () => {
       expect(mockPrismaService.productImage.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: updateData,
-        include: { 
+        include: {
           fileUpload: true,
-          product: true 
+          product: true,
         },
       });
       expect(result).toEqual(mockProductImage);
@@ -222,7 +223,9 @@ describe('ProductService - Advanced Features', () => {
     });
 
     it('should set default product image', async () => {
-      mockPrismaService.productImage.findUnique.mockResolvedValue({ productId: 1 });
+      mockPrismaService.productImage.findUnique.mockResolvedValue({
+        productId: 1,
+      });
       mockPrismaService.productImage.updateMany.mockResolvedValue({});
       mockPrismaService.productImage.update.mockResolvedValue(mockProductImage);
 
@@ -235,9 +238,9 @@ describe('ProductService - Advanced Features', () => {
       expect(mockPrismaService.productImage.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: { isDefault: true },
-        include: { 
+        include: {
           fileUpload: true,
-          product: true 
+          product: true,
         },
       });
       expect(result).toEqual(mockProductImage);
@@ -246,19 +249,21 @@ describe('ProductService - Advanced Features', () => {
 
   describe('Product Attributes', () => {
     it('should get product attributes', async () => {
-      mockPrismaService.productAttribute.findMany.mockResolvedValue([mockProductAttribute]);
+      mockPrismaService.productAttribute.findMany.mockResolvedValue([
+        mockProductAttribute,
+      ]);
 
       const result = await service.getProductAttributes(1);
 
       expect(mockPrismaService.productAttribute.findMany).toHaveBeenCalledWith({
         where: { productId: 1 },
-        include: { 
+        include: {
           product: true,
           variationAttributes: {
             include: {
-              variation: true
-            }
-          }
+              variation: true,
+            },
+          },
         },
         orderBy: { sortOrder: 'asc' },
       });
@@ -274,7 +279,9 @@ describe('ProductService - Advanced Features', () => {
         attributeType: 'COLOR',
       };
 
-      mockPrismaService.productAttribute.create.mockResolvedValue(mockProductAttribute);
+      mockPrismaService.productAttribute.create.mockResolvedValue(
+        mockProductAttribute,
+      );
 
       const result = await service.createProductAttribute(createData);
 
@@ -285,13 +292,13 @@ describe('ProductService - Advanced Features', () => {
           isVariant: true,
           sortOrder: 0,
         },
-        include: { 
+        include: {
           product: true,
           variationAttributes: {
             include: {
-              variation: true
-            }
-          }
+              variation: true,
+            },
+          },
         },
       });
       expect(result).toEqual(mockProductAttribute);
@@ -303,7 +310,9 @@ describe('ProductService - Advanced Features', () => {
         options: ['Red', 'Blue', 'Green', 'Yellow'],
       };
 
-      mockPrismaService.productAttribute.update.mockResolvedValue(mockProductAttribute);
+      mockPrismaService.productAttribute.update.mockResolvedValue(
+        mockProductAttribute,
+      );
 
       const result = await service.updateProductAttribute(1, updateData);
 
@@ -313,20 +322,22 @@ describe('ProductService - Advanced Features', () => {
           ...updateData,
           attributeType: undefined,
         },
-        include: { 
+        include: {
           product: true,
           variationAttributes: {
             include: {
-              variation: true
-            }
-          }
+              variation: true,
+            },
+          },
         },
       });
       expect(result).toEqual(mockProductAttribute);
     });
 
     it('should delete product attribute', async () => {
-      mockPrismaService.productAttribute.delete.mockResolvedValue(mockProductAttribute);
+      mockPrismaService.productAttribute.delete.mockResolvedValue(
+        mockProductAttribute,
+      );
 
       const result = await service.deleteProductAttribute(1);
 
@@ -339,20 +350,22 @@ describe('ProductService - Advanced Features', () => {
 
   describe('Product Variations', () => {
     it('should get product variations', async () => {
-      mockPrismaService.productVariation.findMany.mockResolvedValue([mockProductVariation]);
+      mockPrismaService.productVariation.findMany.mockResolvedValue([
+        mockProductVariation,
+      ]);
 
       const result = await service.getProductVariations(1);
 
       expect(mockPrismaService.productVariation.findMany).toHaveBeenCalledWith({
         where: { productId: 1 },
-        include: { 
+        include: {
           product: true,
           attributes: {
             include: {
-              attribute: true
+              attribute: true,
             },
-            orderBy: { sortOrder: 'asc' }
-          }
+            orderBy: { sortOrder: 'asc' },
+          },
         },
         orderBy: { createdAt: 'asc' },
       });
@@ -431,7 +444,9 @@ describe('ProductService - Advanced Features', () => {
     });
 
     it('should delete product variation', async () => {
-      mockPrismaService.productVariation.delete.mockResolvedValue(mockProductVariation);
+      mockPrismaService.productVariation.delete.mockResolvedValue(
+        mockProductVariation,
+      );
 
       const result = await service.deleteProductVariation(1);
 
@@ -442,21 +457,23 @@ describe('ProductService - Advanced Features', () => {
     });
 
     it('should update variation stock', async () => {
-      mockPrismaService.productVariation.update.mockResolvedValue(mockProductVariation);
+      mockPrismaService.productVariation.update.mockResolvedValue(
+        mockProductVariation,
+      );
 
       const result = await service.updateVariationStock(1, 15);
 
       expect(mockPrismaService.productVariation.update).toHaveBeenCalledWith({
         where: { id: 1 },
         data: { stockQuantity: 15 },
-        include: { 
+        include: {
           product: true,
           attributes: {
             include: {
-              attribute: true
+              attribute: true,
             },
-            orderBy: { sortOrder: 'asc' }
-          }
+            orderBy: { sortOrder: 'asc' },
+          },
         },
       });
       expect(result).toEqual(mockProductVariation);
@@ -473,7 +490,9 @@ describe('ProductService - Advanced Features', () => {
         variations: [mockProductVariation],
       };
 
-      mockPrismaService.product.findUnique.mockResolvedValue(mockProductWithDetails);
+      mockPrismaService.product.findUnique.mockResolvedValue(
+        mockProductWithDetails,
+      );
 
       const result = await service.findProductByIdWithDetails(1);
 
@@ -485,29 +504,26 @@ describe('ProductService - Advanced Features', () => {
           brand: true,
           images: {
             include: { fileUpload: true },
-            orderBy: [
-              { isDefault: 'desc' },
-              { sortOrder: 'asc' }
-            ]
+            orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
           },
           attributes: {
             include: {
               variationAttributes: {
-                include: { variation: true }
-              }
+                include: { variation: true },
+              },
             },
-            orderBy: { sortOrder: 'asc' }
+            orderBy: { sortOrder: 'asc' },
           },
           variations: {
             include: {
               attributes: {
                 include: { attribute: true },
-                orderBy: { sortOrder: 'asc' }
-              }
+                orderBy: { sortOrder: 'asc' },
+              },
             },
             where: { isActive: true },
-            orderBy: { createdAt: 'asc' }
-          }
+            orderBy: { createdAt: 'asc' },
+          },
         },
       });
       expect(result).toEqual(mockProductWithDetails);
@@ -516,7 +532,9 @@ describe('ProductService - Advanced Features', () => {
     it('should throw error when product not found', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.findProductByIdWithDetails(999)).rejects.toThrow('Product not found');
+      await expect(service.findProductByIdWithDetails(999)).rejects.toThrow(
+        'Product not found',
+      );
     });
 
     it('should find all products with details', async () => {
@@ -526,10 +544,12 @@ describe('ProductService - Advanced Features', () => {
           images: [mockProductImage],
           attributes: [mockProductAttribute],
           variations: [mockProductVariation],
-        }
+        },
       ];
 
-      mockPrismaService.product.findMany.mockResolvedValue(mockProductsWithDetails);
+      mockPrismaService.product.findMany.mockResolvedValue(
+        mockProductsWithDetails,
+      );
 
       const result = await service.findAllProductsWithDetails(10, 0);
 
@@ -544,26 +564,23 @@ describe('ProductService - Advanced Features', () => {
           brand: true,
           images: {
             include: { fileUpload: true },
-            orderBy: [
-              { isDefault: 'desc' },
-              { sortOrder: 'asc' }
-            ],
-            take: 1
+            orderBy: [{ isDefault: 'desc' }, { sortOrder: 'asc' }],
+            take: 1,
           },
           attributes: {
-            orderBy: { sortOrder: 'asc' }
+            orderBy: { sortOrder: 'asc' },
           },
           variations: {
             where: { isActive: true },
             include: {
               attributes: {
                 include: { attribute: true },
-                orderBy: { sortOrder: 'asc' }
-              }
+                orderBy: { sortOrder: 'asc' },
+              },
             },
             orderBy: { price: 'asc' },
-            take: 1
-          }
+            take: 1,
+          },
         },
         orderBy: { createdAt: 'desc' },
         take: 10,

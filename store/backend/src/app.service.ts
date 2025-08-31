@@ -1,30 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AppService {
-  constructor() {}
+  constructor(private readonly i18nService: I18nService) {}
 
   async getHello(lang?: string): Promise<string> {
-    return lang === 'en' ? 'Hello World!' : 'مرحبا بالعالم!';
+    return this.i18nService.translate('common.hello', { lang });
   }
 
   async getWelcome(lang?: string): Promise<string> {
-    return lang === 'en'
-      ? 'Welcome to Ajjmal API'
-      : 'مرحبا بكم في واجهة برمجة تطبيقات أجمل';
+    return this.i18nService.translate('common.welcome', { lang });
   }
 
   async getApiInfo(lang?: string): Promise<any> {
     return {
-      title:
-        lang === 'en'
-          ? 'Ajjmal E-commerce API'
-          : 'واجهة برمجة تطبيقات أجمل للتجارة الإلكترونية',
-      description:
-        lang === 'en'
-          ? 'Modern multi-vendor e-commerce platform'
-          : 'منصة حديثة للتجارة الإلكترونية متعددة البائعين',
-      version: '2.0.0',
+      title: this.i18nService.translate('common.api.title', { lang }),
+      description: this.i18nService.translate('common.api.description', {
+        lang,
+      }),
+      version: this.i18nService.translate('common.api.version', { lang }),
     };
   }
 }

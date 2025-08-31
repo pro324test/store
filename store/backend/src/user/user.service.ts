@@ -132,7 +132,12 @@ export class UserService {
     });
   }
 
-  async assignRole(userId: number, role: string, isPrimary: boolean = false, changedById?: number) {
+  async assignRole(
+    userId: number,
+    role: string,
+    isPrimary: boolean = false,
+    changedById?: number,
+  ) {
     try {
       // If setting as primary, make sure no other role is primary for this user
       if (isPrimary) {
