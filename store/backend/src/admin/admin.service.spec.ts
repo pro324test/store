@@ -133,12 +133,16 @@ describe('AdminService', () => {
         permission: { id: 1, permissionKey: 'test.permission' },
       };
 
-      mockPrismaService.systemStaffRolePermission.create.mockResolvedValue(expectedResult);
+      mockPrismaService.systemStaffRolePermission.create.mockResolvedValue(
+        expectedResult,
+      );
 
       const result = await service.assignPermissionToRole(roleId, permissionId);
 
       expect(result).toEqual(expectedResult);
-      expect(mockPrismaService.systemStaffRolePermission.create).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.systemStaffRolePermission.create,
+      ).toHaveBeenCalledWith({
         data: { roleId, permissionId },
         include: {
           role: true,

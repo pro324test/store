@@ -1,4 +1,12 @@
-import { Resolver, Query, Mutation, Args, Int, InputType, Field } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  InputType,
+  Field,
+} from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { User, UserRoleAssignment } from './user.model';
 
@@ -71,7 +79,8 @@ export class UserResolver {
     @Args('userId', { type: () => Int }) userId: number,
     @Args('role') role: string,
     @Args('isPrimary', { defaultValue: false }) isPrimary: boolean,
-    @Args('changedById', { type: () => Int, nullable: true }) changedById?: number,
+    @Args('changedById', { type: () => Int, nullable: true })
+    changedById?: number,
   ) {
     return this.userService.assignRole(userId, role, isPrimary, changedById);
   }
@@ -80,7 +89,8 @@ export class UserResolver {
   removeUserRole(
     @Args('userId', { type: () => Int }) userId: number,
     @Args('role') role: string,
-    @Args('changedById', { type: () => Int, nullable: true }) changedById?: number,
+    @Args('changedById', { type: () => Int, nullable: true })
+    changedById?: number,
   ) {
     return this.userService.removeRole(userId, role, changedById);
   }
@@ -91,9 +101,15 @@ export class UserResolver {
     @Args('role') role: string,
     @Args('isActive', { nullable: true }) isActive?: boolean,
     @Args('isPrimary', { nullable: true }) isPrimary?: boolean,
-    @Args('changedById', { type: () => Int, nullable: true }) changedById?: number,
+    @Args('changedById', { type: () => Int, nullable: true })
+    changedById?: number,
   ) {
-    return this.userService.updateRole(userId, role, { isActive, isPrimary }, changedById);
+    return this.userService.updateRole(
+      userId,
+      role,
+      { isActive, isPrimary },
+      changedById,
+    );
   }
 
   @Mutation(() => Boolean)

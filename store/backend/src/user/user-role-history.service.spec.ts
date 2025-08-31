@@ -52,12 +52,16 @@ describe('UserRoleHistoryService', () => {
         },
       ];
 
-      mockPrismaService.userRoleHistoryItem.findMany.mockResolvedValue(mockHistoryItems);
+      mockPrismaService.userRoleHistoryItem.findMany.mockResolvedValue(
+        mockHistoryItems,
+      );
 
       const result = await service.findAll();
 
       expect(result).toEqual(mockHistoryItems);
-      expect(mockPrismaService.userRoleHistoryItem.findMany).toHaveBeenCalledWith({
+      expect(
+        mockPrismaService.userRoleHistoryItem.findMany,
+      ).toHaveBeenCalledWith({
         where: {},
         include: {
           user: {
@@ -87,7 +91,9 @@ describe('UserRoleHistoryService', () => {
       const userId = 1;
       await service.findAll({ userId });
 
-      expect(mockPrismaService.userRoleHistoryItem.findMany).toHaveBeenCalledWith(
+      expect(
+        mockPrismaService.userRoleHistoryItem.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { userId },
         }),
@@ -98,7 +104,9 @@ describe('UserRoleHistoryService', () => {
       const role = UserRole.VENDOR;
       await service.findAll({ role });
 
-      expect(mockPrismaService.userRoleHistoryItem.findMany).toHaveBeenCalledWith(
+      expect(
+        mockPrismaService.userRoleHistoryItem.findMany,
+      ).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { role },
         }),
@@ -124,39 +132,43 @@ describe('UserRoleHistoryService', () => {
         changedBy: { id: 2, fullName: 'Admin User' },
       };
 
-      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(mockCreatedItem);
+      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(
+        mockCreatedItem,
+      );
 
       const result = await service.create(createData);
 
       expect(result).toEqual(mockCreatedItem);
-      expect(mockPrismaService.userRoleHistoryItem.create).toHaveBeenCalledWith({
-        data: {
-          userId: createData.userId,
-          role: createData.role,
-          action: createData.action,
-          changedById: createData.changedById,
-          reason: createData.reason,
-          profileId: undefined,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              fullName: true,
-              phoneNumber: true,
-              email: true,
+      expect(mockPrismaService.userRoleHistoryItem.create).toHaveBeenCalledWith(
+        {
+          data: {
+            userId: createData.userId,
+            role: createData.role,
+            action: createData.action,
+            changedById: createData.changedById,
+            reason: createData.reason,
+            profileId: undefined,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneNumber: true,
+                email: true,
+              },
+            },
+            changedBy: {
+              select: {
+                id: true,
+                fullName: true,
+                phoneNumber: true,
+                email: true,
+              },
             },
           },
-          changedBy: {
-            select: {
-              id: true,
-              fullName: true,
-              phoneNumber: true,
-              email: true,
-            },
-          },
         },
-      });
+      );
     });
   });
 
@@ -176,9 +188,16 @@ describe('UserRoleHistoryService', () => {
         reason,
       };
 
-      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(mockCreatedItem);
+      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(
+        mockCreatedItem,
+      );
 
-      const result = await service.logRoleAssignment(userId, role, changedById, reason);
+      const result = await service.logRoleAssignment(
+        userId,
+        role,
+        changedById,
+        reason,
+      );
 
       expect(result).toEqual(mockCreatedItem);
       expect(mockPrismaService.userRoleHistoryItem.create).toHaveBeenCalledWith(
@@ -205,9 +224,16 @@ describe('UserRoleHistoryService', () => {
         reason,
       };
 
-      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(mockCreatedItem);
+      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(
+        mockCreatedItem,
+      );
 
-      const result = await service.logRoleRevocation(userId, role, changedById, reason);
+      const result = await service.logRoleRevocation(
+        userId,
+        role,
+        changedById,
+        reason,
+      );
 
       expect(result).toEqual(mockCreatedItem);
       expect(mockPrismaService.userRoleHistoryItem.create).toHaveBeenCalledWith(
@@ -234,9 +260,16 @@ describe('UserRoleHistoryService', () => {
         reason,
       };
 
-      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(mockCreatedItem);
+      mockPrismaService.userRoleHistoryItem.create.mockResolvedValue(
+        mockCreatedItem,
+      );
 
-      const result = await service.logPrimaryRoleChange(userId, role, changedById, reason);
+      const result = await service.logPrimaryRoleChange(
+        userId,
+        role,
+        changedById,
+        reason,
+      );
 
       expect(result).toEqual(mockCreatedItem);
       expect(mockPrismaService.userRoleHistoryItem.create).toHaveBeenCalledWith(
@@ -276,7 +309,9 @@ describe('UserRoleHistoryService', () => {
         },
       ];
 
-      jest.spyOn(service, 'getUserRoleHistory').mockResolvedValue(mockHistory as any);
+      jest
+        .spyOn(service, 'getUserRoleHistory')
+        .mockResolvedValue(mockHistory as any);
 
       const result = await service.getUserActivitySummary(userId);
 

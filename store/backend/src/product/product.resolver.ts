@@ -1,13 +1,21 @@
 import { Resolver, Query, Args, Int, Mutation } from '@nestjs/graphql';
 import { ProductService } from './product.service';
-import { Category, Brand, Product, Subcategory, ProductImage, ProductAttribute, ProductVariation } from './product.model';
-import { 
-  CreateProductImageInput, 
+import {
+  Category,
+  Brand,
+  Product,
+  Subcategory,
+  ProductImage,
+  ProductAttribute,
+  ProductVariation,
+} from './product.model';
+import {
+  CreateProductImageInput,
   UpdateProductImageInput,
   CreateProductAttributeInput,
   UpdateProductAttributeInput,
   CreateProductVariationInput,
-  UpdateProductVariationInput
+  UpdateProductVariationInput,
 } from './dto/product-advanced.dto';
 
 @Resolver(() => Product)
@@ -332,14 +340,18 @@ export class ProductResolver {
   }
 
   @Mutation(() => ProductImage)
-  setDefaultProductImage(@Args('imageId', { type: () => Int }) imageId: number) {
+  setDefaultProductImage(
+    @Args('imageId', { type: () => Int }) imageId: number,
+  ) {
     return this.productService.setDefaultProductImage(imageId);
   }
 
   // === PRODUCT ATTRIBUTE OPERATIONS ===
 
   @Query(() => [ProductAttribute], { name: 'productAttributes' })
-  getProductAttributes(@Args('productId', { type: () => Int }) productId: number) {
+  getProductAttributes(
+    @Args('productId', { type: () => Int }) productId: number,
+  ) {
     return this.productService.getProductAttributes(productId);
   }
 
@@ -365,7 +377,9 @@ export class ProductResolver {
   // === PRODUCT VARIATION OPERATIONS ===
 
   @Query(() => [ProductVariation], { name: 'productVariations' })
-  getProductVariations(@Args('productId', { type: () => Int }) productId: number) {
+  getProductVariations(
+    @Args('productId', { type: () => Int }) productId: number,
+  ) {
     return this.productService.getProductVariations(productId);
   }
 

@@ -17,10 +17,6 @@ import { PrismaModule } from '../prisma/prisma.module';
     UserRoleRequestResolver,
     UserRoleHistoryResolver,
   ],
-  exports: [
-    UserService,
-    UserRoleRequestService,
-    UserRoleHistoryService,
-  ],
+  exports: [UserService, UserRoleRequestService, UserRoleHistoryService],
 })
 export class UserModule {}

@@ -183,15 +183,24 @@ export class UserRoleHistoryService {
   // Get activity summary for a user
   async getUserActivitySummary(userId: number) {
     const history = await this.getUserRoleHistory(userId);
-    
+
     const summary = {
       totalChanges: history.length,
-      roleAssignments: history.filter(h => h.action === 'ASSIGNED').length,
-      roleRevocations: history.filter(h => h.action === 'REVOKED').length,
-      primaryRoleChanges: history.filter(h => h.action === 'PRIMARY_CHANGED').length,
+      roleAssignments: history.filter((h) => h.action === 'ASSIGNED').length,
+      roleRevocations: history.filter((h) => h.action === 'REVOKED').length,
+      primaryRoleChanges: history.filter((h) => h.action === 'PRIMARY_CHANGED')
+        .length,
       lastChange: history[0]?.changedAt || null,
-      rolesAssigned: [...new Set(history.filter(h => h.action === 'ASSIGNED').map(h => h.role))],
-      rolesRevoked: [...new Set(history.filter(h => h.action === 'REVOKED').map(h => h.role))],
+      rolesAssigned: [
+        ...new Set(
+          history.filter((h) => h.action === 'ASSIGNED').map((h) => h.role),
+        ),
+      ],
+      rolesRevoked: [
+        ...new Set(
+          history.filter((h) => h.action === 'REVOKED').map((h) => h.role),
+        ),
+      ],
     };
 
     return summary;

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole, UserRoleRequestStatus } from './user-role-request.model';
 
@@ -119,7 +123,9 @@ export class UserRoleRequestService {
     });
 
     if (pendingRequest) {
-      throw new BadRequestException('There is already a pending request for this role');
+      throw new BadRequestException(
+        'There is already a pending request for this role',
+      );
     }
 
     return this.prisma.userRoleRequest.create({
@@ -142,11 +148,7 @@ export class UserRoleRequestService {
     });
   }
 
-  async approve(
-    id: number,
-    processedById: number,
-    adminNotes?: string,
-  ) {
+  async approve(id: number, processedById: number, adminNotes?: string) {
     const roleRequest = await this.findOne(id);
 
     if (roleRequest.status !== 'PENDING') {

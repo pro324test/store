@@ -69,7 +69,9 @@ export class VendorService {
     });
 
     if (existingVendorProfile) {
-      throw new Error('User already has a vendor profile. Only one shop per user is allowed.');
+      throw new Error(
+        'User already has a vendor profile. Only one shop per user is allowed.',
+      );
     }
 
     // Start transaction
